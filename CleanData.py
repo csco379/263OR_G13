@@ -44,6 +44,10 @@ Locations_cleaned = Locations_file[~Locations_file['Type'].str.contains("Distrib
 Data_table1 = Locations_cleaned[['Store', 'Lat','Long']].copy()
 Data_table2 = Data_table1.copy()
 
+# Add IDs
+Data_table1["ID"]=Data_table1.index
+Data_table2["ID"]=Data_table2.index
+
 
 
 ###########################################################################################################
@@ -160,5 +164,6 @@ for j in range(n_dist):
     ax.plot(distribution_data.iloc[j]["x"],distribution_data.iloc[j]["y"], 'rx', markersize=12)
 plt.show()
 
-print(Data_table1)
-print(Data_table2)
+# Print total average
+# average = Data_table1["Demand Estimate"].mean()
+# print(average)
