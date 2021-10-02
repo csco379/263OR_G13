@@ -1,53 +1,103 @@
 import numpy as np
 import pandas as pd
 
-def set_boundary(filename):
+def set_boundaries(filename):
 
-    location_df = pd.read_csv("WoolworthsLocations.csv")
+    #read in stores data file and add region column to the end
     stores_df = pd.read_csv(filename)
     stores_df["Region"] = ""
     loc_len = len(stores_df.index)
     
-    DC_index = int(location_df[location_df['Store']=='Distribution Centre Auckland'].index.values)
-    CD_Birkenhead = int(location_df[location_df['Store']=='Countdown Birkenhead'].index.values)
-    CDMetro_ASt = int(location_df[location_df['Store']=='Countdown Metro Albert Street'].index.values)
-    CD_PtChev = int(location_df[location_df['Store']=='Countdown Pt Chevalier'].index.values)
-
-    DC_lat = location_df.loc[DC_index]['Lat']
-    DC_long = location_df.loc[DC_index]['Long']
-    CD_Birkenhead_lat = location_df.loc[CD_Birkenhead]['Lat']
-    CD_Birkenhead_long = location_df.loc[CD_Birkenhead]['Long']
-    #CDMetro_ASt_lat = location_df.loc[CDMetro_ASt]['Lat']
-    CDMetro_ASt_long = location_df.loc[CDMetro_ASt]['Long']
-    CD_PtChev_lat = location_df.loc[CD_PtChev]['Lat']
-    #CD_PtChev_long = location_df.loc[CD_PtChev]['Long']
-
-    stores_df.iloc[CD_PtChev, 'Region'] = 'Central'
-    stores_df.iloc[CDMetro_ASt, 'Region'] = 'Central'    
     
+    #BOUNDARIES FOR THE EAST REGION
+    #Left bound of East region - Countdown Meadowbank
+    CD_Meadowbank_index = int(stores_df[stores_df['Store']=='Countdown Meadowbank'].index.values)
+    CD_Meadowbank_x = stores_df.loc[CD_Meadowbank_index]['x']
+
+    #South bound of East region - FreshChoice Otahuhu
+    FC_Otahuhu_index = int(stores_df[stores_df['Store']=='FreshChoice Otahuhu'].index.values)
+    FC_Otahuhu_y = stores_df.loc[FC_Otahuhu_index]['y']
+
+    
+    #BOUNDARIES FOR THE NORTH REGION
+    #South bound in North region - Countdown Birkenhead
+    CD_Birkenhead_index = int(stores_df[stores_df['Store']=='Countdown Birkenhead'].index.values)
+    CD_Birkenhead_y = stores_df.loc[CD_Birkenhead_index]['y']
+
+    #Left bound in North region - Countdown Glenfield
+    CD_Glenfield_index = int(stores_df[stores_df['Store']=='Countdown Glenfield'].index.values)
+    CD_Glenfield_x = stores_df.loc[CD_Glenfield_index]['x']
+    
+
+    #BOUNDARIES FOR THE CENTRAL REGION
+    #Left bound - Countdown Pt Chevalier
+    CD_PtChev_index = int(stores_df[stores_df['Store']=='Countdown Pt Chevalier'].index.values)
+    CD_PtChev_x = stores_df.loc[CD_PtChev_index]['x']
+
+    #Right bound - Countdown Greenlane
+    CD_Greenlane_index = int(stores_df[stores_df['Store']=='Countdown Greenlane'].index.values)
+    CD_Greenlane_x = stores_df.loc[CD_Greenlane_index]['x']
+
+    #Countdown Lynfield exception
+    CD_Lynfield_index = int(stores_df[stores_df['Store']=='Countdown Lynfield'].index.values)
+    CD_Lynfield_x = stores_df.loc[CD_Lynfield_index]['x']
+
+
+
+    #assigning each store to their respective region
     for i in range (loc_len):
 
-        store_lat = stores_df.loc[i]['Lat']
-        store_long = stores_df.loc[i]['Long']
+        store_x = stores_df.loc[i]['x']
+        store_y = stores_df.loc[i]['y']
 
-        if store_long < DC_long:
-             stores_df.iloc[i, 'Region'] = 'South'
+        #All stores south of the Distribution Centre (DC)
+        if store_y < 0:
+             stores_df.loc[i, 'Region'] = 'South'
         
-        elif store_lat > DC_lat and store_long > DC_long:
-            stores_df.iloc[i, 'Region'] = 'East'
-        
-        elif store_lat >= CD_Birkenhead_lat and store_long >= CD_Birkenhead_long:
-            stores_df.iloc[i, 'Region'] = 'North'
+        #All stores in the Northern region bound by Countdown Birkenhead and Glenfield
+        elif store_y >= CD_Birkenhead_y and store_x >= CD_Glenfield_x:
+            stores_df.loc[i, 'Region'] = 'North'
 
-        elif store_long > DC_long and store_long < CDMetro_ASt_long and store_lat < DC_lat and store_lat > CD_PtChev_lat:
-            stores_df.iloc[i, 'Region'] = 'Central'
+        #All stores in the Eastern region bound by Countdown Meadowbank and FreshChoice Otahuhu
+        elif store_x >= CD_Meadowbank_x and store_y >= FC_Otahuhu_y:
+            stores_df.loc[i, 'Region'] = 'East'
         
+        #All stores in the Central region bound by Countdown Pt Chevalier and Greenlane
+        elif store_x >= CD_PtChev_x and store_x <= CD_Greenlane_x and store_x != CD_Lynfield_x:
+            stores_df.loc[i, 'Region'] = 'Central'
+        
+        #remaining stores assigned to West region
         else:
-            stores_df.iloc[i, 'Region'] = 'West'
+            stores_df.loc[i, 'Region'] = 'West'
 
+    #check accuracy
+    Southcount = 0
+    Eastcount = 0
+    Centralcount = 0
+    Northcount = 0
+    Westcount = 0
+
+    for i in range(loc_len):
+        if stores_df.loc[i, 'Region'] == 'West':
+            Westcount += 1
+        elif stores_df.loc[i, 'Region'] == 'South':
+            Southcount += 1
+        elif stores_df.loc[i, 'Region'] == 'Central':
+            Centralcount += 1
+        elif stores_df.loc[i, 'Region'] == 'North':
+            Northcount += 1
+        elif stores_df.loc[i, 'Region'] == 'East':
+            Eastcount += 1
+    
     stores_df.to_csv(filename)
 
+    #print("South count = {}".format(Southcount))
+    #print("East count = {}".format(Eastcount))
+    #print("Central count = {}".format(Centralcount))
+    #print("West count = {}".format(Westcount))
+    #print("North count = {}".format(Northcount))
 
 if __name__ == "__main__":
 
-    set_boundary()
+    set_boundaries("Store_Data_Nonzero.csv")
+    set_boundaries("Store_Data_Some_zero.csv")
