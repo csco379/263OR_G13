@@ -89,7 +89,7 @@ def set_boundaries(filename):
         elif stores_df.loc[i, 'Region'] == 'East':
             Eastcount += 1
     
-    stores_df.to_csv(filename + "_GROUPED")
+    stores_df.to_csv(filename.split('.csv')[0] + "_GROUPED.csv")
 
     #print("South count = {}".format(Southcount))
     #print("East count = {}".format(Eastcount))
