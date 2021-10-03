@@ -13,8 +13,8 @@ from Regions import set_boundaries
 distributionCentre = pd.read_csv("Distribution_Centre_Data.csv")
 data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
 durations = pd.read_csv("WoolworthsTravelDurations.csv").to_numpy()
-# Distribution centre distances 
-DC = durations[56]
+# Distribution centre index
+DC = 55
 
 # Seperate the data into regions and convert to numpy arrays
 North = data.loc[data["Region"]=='North'].to_numpy()
@@ -24,103 +24,117 @@ West = data.loc[data["Region"]=='West'].to_numpy()
 Central= data.loc[data["Region"]=='Central'].to_numpy()
 
 
+# Generalise for loop for each region
+region = North
+
 # Loop to apply to each region to get each combination of 3 stores
-# check time not >30 Duration 
-# object = (sets[0])[0]  tuple indexing
 # ID
-ID_set = North[:,4]
+ID_set = region[:,4]
 #list every unordered combo of 3 stores
 sets = list(itertools.combinations(ID_set, 3))
 
-
+# Initialising lists
+############################################################
 # Creating ordered route array to store outcome
-route = [O]
+route = [DC] # Distribution centre ID is the first element of all routes
 currentRoute = []
-
-# 1d array 
 node = []
+time= 0.0
+pallets = 0
+temp_route = []
+# Initialising final time and route storage lists
+routeMatrix = [[]]
+timeArray = []
+palletsArray = []
+############################################################
 
-
-# Cheapest Insertion ( Assume symetric times to shorten time)
+# Cheapest Insertion ( Assume symetric durations)
 for k in range(len(sets)):
-    # 1 possible combination
-    cluster = sets[k]
+    print(k) # To check progress whilst running 
+    # 1 possible combination of stores
+    cluster = list(sets[k])
     
-    for j in cluster: # checks from distribution centre
+    for n in cluster: # checks from distribution centre
 
-        # Indexing ID to find distance of each node from distribution 
-
-        node[i] = durations[56, cluster[i]-1] # accounts for data frame shift (CHECK)
+        # Indexing ID to find distance of each store in cluster from distribution 
+        node.append(durations[DC, n+1]) # accounts for data frame shift (CHECK)
     
-        # Select the minimum and add to the route 
-        route.append(np.indices(min(node)))
-        time += min(node) +7.5 
-        pallets += North[cluster[i], 5]
-
+        # Select the minimum time and add to the route ( Symetric assumption here) 
+        route.append(node.index(min(node)))
+        time += min(node) + 7.5 # Here only accounting for one way
+        pallets += region[n, 5]
         # Remove added node from cluster ( last added node)
         cluster.pop(route[-1])
-        while(cluster!=[]): # while nodes arent visited continue adding to route
+
+        while(cluster!=[]): # while nodes arent in the partial solution continue adding to route
             #2d array row = current node number in partial solution, cols = number of nodes left to visit in cluster 
             min_duration = np.zeros((len(route), len(cluster)))
             time_back = np.zeros((len(route), len(cluster)))
             # Check for next shortest route addition at insertion positions
             # Need to check point in route that every store in cluster could be added
-            for i in route: # Checks distances from each next node in route to each node in the remaining cluster
-                for j in cluster: 
-                    # min_duration = every store in partial solution going to every store remaining
-                    min_duration[i,j] = durations[route[i]-1, cluster[j]-1] # ( -1 accounts for dataframe feature : double check)
+            route.append(DC) # Distribution centre store
+            for i in range(len(route)-1): # Checks distances from each next node in route to each node in the remaining cluster
+                for j in range(len(cluster)): 
+                    min_time_temp = durations[route[i]-2, cluster[j]+1] + durations[route[i+1]-2, cluster[j]+1]
+                    if(j==0):
+                        min_time = time + min_time_temp + 7.5
+                        min_store = cluster[j]
+                        pallets_temp = pallets + region[min_store,5]
+                    elif(min_time_temp<min_time):
+                        min_time = time + min_time_temp + 7.5
+                        min_store = cluster[j]
+                        pallets_temp = pallets + region[min_store,5]
+                    # min_duration = every store in partial solution going to every store remaining and back to next store in solution
+                    # ( -1 accounts for dataframe feature : double check)
+                    #min_duration[i,j] = durations[route[i]-1, cluster[j]-1] + durations[route[i+1]-1, cluster[j]-1]
                     # Time from node in cluster back to next node or the origin
 
             # Find minimum combo in this array so can find associated store, add to route ( in correct spot depending on which node from then increment time and pallets (back time)
-            min_index = divmod(min_duration.argmin(), min_duration.shape[1])        
-            route.append(cluster[min_index[0]]) # Extracts row of min index which is the route that adds the least time 
-            time += min_duration[min_duration[min_index[0]], min_duration[min_index[1]]] + 7.5     # Adding time of third added node   
-            pallets += North[cluster[min_index[0]], 5]
-            cluster.pop(route[min_index[0]]) # Remove the last appended node from cluster
+            #min_index = divmod(min_duration.argmin(), min_duration.shape[1])        
+            #route.append(cluster[min_index[0]]) # Extracts row of min index which is the route that adds the least time 
+            #time += min_duration[min_duration[min_index[0]], min_duration[min_index[1]]] + 7.5     # Adding time of third added node   
+            #pallets += North[cluster[min_index[0]], 5]
+            #cluster.pop(route[min_index[0]]) # Remove the last appended node from cluster
             # Cluster still has 1 store in it (for sets of 3)
 
             # Check where the next store should be inserted into route list
         
-            for j in route:
-        
-                temp_route = route.append(57) # Puts the distriution centre as the last store so last insertion spot can be checked
+            for v in range(len(route)):
+                temp_route = route # takes a copy 
                 # Find min duration to node still in cluster
-                min_duration_best_out = durations[route[j]-1, cluster[0]-1]
-                min_duration_best_back = durations[cluster[0]-1, route[j+1]-1] # accounted for by appending the distribution centre and non symetry
-                for i in range(1,len(cluster)-1): # Start at 1 because the first element has been checked
+                for u in range(len(cluster)): # Start at 1 because the first element has been checked
                     #Checking each i
-                    min_duration_temp_out = durations[route[j]-1, cluster[i]-1]
-                    min_duration_temp_back = durations[cluster[i]-1, route[j+1]-1] # Accounting for directions
+                    min_duration_temp = durations[route[v]-2, cluster[u]+1] + durations[cluster[u]-2, route[v+1]+1] # Both directions
                     # Recording if best time
-                    if(min_duration_temp_out + min_duration_temp_back < min_duration_best_out + min_duration_best_back):
-                        min_duration_best_out = min_duration_temp_out
-                        min_duration_best_back = min_duration_temp_back
-                        # Could make 1 variable above to optimise
-                        store = cluster[i]
+                    if(v==0):
+                        min_duration_best = min_duration_temp
+                        store_ID = cluster[u]
+                    elif(min_duration_temp < min_duration_best):
+                        min_duration_best = min_duration_temp
+                        store_ID = cluster[u]
+                        
             
                 # Insert best new node into array  
-                temp_route.insert(j+1,store)
-                # Calculating total route time with this node
-                temp_time = time + min_duration_best_out + min_duration_best_back + 7.5
-            
-                if(j==0):
+                temp_route.insert(v+1,store_ID)
+                # Calculating total route time with this insertion point
+                temp_time = time + min_duration_best + 7.5
+                temp_pallets = pallets
+                
+                # Output arrays
+                if(v==0):
                     routeMatrix[k] = temp_route
-                    timeArray[k] = temp_time
+                    timeArray.append(temp_time)
+                    pallets = pallets_temp + region[store_ID,5]
                 elif(temp_time<timeArray[k]):
                     routeMatrix[k] = temp_route
                     timeArray[k] = temp_time
+                    pallets = pallets_temp + region[store_ID,5]
             
 
 
        
                 
-        #Make dure that route is then stored as a row in an additional array
-    # Increment set in region
- #store in sol 
- #
- ##
- #
-
+print(routeMatrix)
 
 
 
