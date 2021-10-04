@@ -28,8 +28,8 @@ pd.options.mode.chained_assignment = None  # Remove false positive warning
 
 # Extract the distribution centre location and remove from locations dataframe
 distribution_data = Locations_file[Locations_file['Type'].str.contains("Distribution")]
-distribution_data.reset_index(inplace=True, drop=True)
-distribution_data.drop(distribution_data.columns[[0,1]], 1)
+# distribution_data.reset_index(inplace=True, drop=True)
+# distribution_data.drop(distribution_data.columns[[0,1]], 1)
 n_dist, _ = distribution_data.shape
 # Set as origins
 distribution_data["x"] = 0
@@ -40,8 +40,10 @@ distribution_data["theta"] = 0
 distribution_data.to_csv("Distribution_Centre_Data.csv", index=False)
 
 # Initialise tables of cleaned tabular data
-Locations_cleaned = Locations_file[~Locations_file['Type'].str.contains("Distribution")]
-Data_table1 = Locations_cleaned[['Store', 'Lat','Long']].copy()
+# Locations_cleaned = Locations_file[~Locations_file['Type'].str.contains("Distribution")]
+# Data_table1 = Locations_cleaned[['Store', 'Lat','Long']].copy()
+
+Data_table1 = Locations_file[['Store', 'Lat','Long']].copy()
 Data_table2 = Data_table1.copy()
 
 # Add IDs
@@ -58,8 +60,8 @@ Data_table2["ID"]=Data_table2.index
 # Data_table1 will be used to solve the LP when only Countdown stores have nonzero demand; this occurs weekly
 # Note the LP doesn't need to be solved when no stores have demand (which occurs weekly)
 [n_stores, n_days] = Demand_file.shape
-demands1 = np.zeros(n_stores)
-demands2 = np.zeros(n_stores)
+demands1 = np.zeros(n_stores + 1)
+demands2 = np.zeros(n_stores + 1)
 
 # Process the demands and obtain a conservative estimate for each. These will be used to generate routes
 # Use the Xth percentile value as the demand for each store
@@ -74,10 +76,14 @@ for i in range(n_stores):
     # Calculate and store the Xth percentile, excluding the days with no demand
     nonzero_demands = [value for value in store_demands if value != 0]
     estimate = np.percentile(nonzero_demands, X)
-    demands1[i] = estimate
+
+    if i < 55:
+        demands1[i] = estimate
+    elif i > 55:
+        demands1[i+1] = estimate
 
     # Update the demand on days when just Countdown has nonzero demand 
-    if "Countdown" in Demand_file["Store"][i]:
+    if "Countdown" in Demand_file["Store"][i] and i != 55:
         demands2[i] = estimate
 
 # Append the demand estimates to the data tables
@@ -95,16 +101,17 @@ centre_data = distribution_data.iloc[0,:]
 x_cent,y_cent,_,_ = utm.from_latlon(centre_data.Lat, centre_data.Long)
 
 # Initialise arrays
-x_coords = np.zeros(n_stores)
-y_coords = np.zeros(n_stores)
+x_coords = np.zeros(n_stores+1)
+y_coords = np.zeros(n_stores+1)
 
 # Loop through stores
 for i in range(n_stores):
     # Calculate and store the coordinates
-    store = Data_table1.iloc[i,:]
-    x,y,_,_ = utm.from_latlon(store.Lat, store.Long)
-    x_coords[i] = (x - x_cent)
-    y_coords[i] = (y - y_cent)
+    if i !=55:
+        store = Data_table1.iloc[i,:]
+        x,y,_,_ = utm.from_latlon(store.Lat, store.Long)
+        x_coords[i] = (x - x_cent)
+        y_coords[i] = (y - y_cent)
 
 # Append data to tables
 Data_table1["x"] = x_coords
@@ -129,7 +136,7 @@ rows, cols = r_all.shape
 for i in range(cols):
 
     # Calculate the distance of each store from the centre and store
-    r = [d for d in r_all.iloc[:,i] if d != 0]
+    r = [d for d in r_all.iloc[:,i]]
     str_name = "r_" + r_all.columns[i]
     Data_table1[str_name] = r
     Data_table2[str_name] = r

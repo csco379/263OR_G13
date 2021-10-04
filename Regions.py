@@ -66,6 +66,9 @@ def set_boundaries(filename):
         elif store_x >= CD_PtChev_x and store_x <= CD_Greenlane_x and store_x != CD_Lynfield_x:
             stores_df.loc[i, 'Region'] = 'Central'
         
+        elif store_x == 0 and store_y == 0:
+            stores_df.loc[i, 'Region'] = 'Central/Distribution'
+
         #remaining stores assigned to West region
         else:
             stores_df.loc[i, 'Region'] = 'West'
