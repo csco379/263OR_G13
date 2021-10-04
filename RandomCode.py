@@ -10,6 +10,14 @@ route_pallets_vector = np.loadtxt(open("Route_Pallets.csv"), delimiter=",", skip
 # Obtain the number of stores and potential routes to use
 n_stores, n_routes = np.shape(route_matrix)
 
-print(n_stores, n_routes)
+#print(n_stores, n_routes)
+
+durations = pd.read_csv("WoolworthsTravelDurations.csv").to_numpy()
+
+store1index = 2
+store2index = 4
+print(durations[2,4+1])
+
+
 
 

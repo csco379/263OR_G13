@@ -1,6 +1,5 @@
 # Alt version of routeGeneration.py [V2]
 
-
 # Libraries
 import numpy as np
 from numpy.core.einsumfunc import _einsum_path_dispatcher  #?????
@@ -24,6 +23,7 @@ East = data.loc[data["Region"]=='East'].to_numpy()
 West = data.loc[data["Region"]=='West'].to_numpy()
 Central= data.loc[data["Region"]=='Central'].to_numpy()
 
+# Calculate number of stores
 n_stores = len(North) + len(South) + len(East) + len(West) + len(Central)
 
 # Initialising total time, pallets lists + route storage matrix
@@ -55,62 +55,38 @@ for region in [North, South, East, West, Central]:
         # Select the minimum time and add to the route (symmetric assumption here) 
         min_time_location = first_time.index(min(first_time))
         route.insert(1, cluster[min_time_location])                        # List containing places visited, in order
-        time += min(first_time) + 450                                      # Update route's travel time
+        time += 2 * min(first_time) + 450                                  # Update route's travel time
         pallets += data.iloc[cluster[min_time_location], 5]                # Update route's total pallet demand
         cluster.pop(min_time_location)                                     # Remove store from cluster
 
-        '''
-        if(len(sets[k]) > 3):
-        
-            for i in range(1,len(route)-1): # Checks distances from each next node in route to each node in the remaining cluster
-                for j in cluster: 
-                min_time_temp = durations[route[i], j+1] + durations[route[i+1], j+1]
-                if(i==0):
-                    min_time = time + min_time_temp + 450
-                    min_store = j
-                    pallets_temp = pallets + data.iloc[min_store, 5]
-                elif(min_time_temp<min_time):
-                    min_time = time + min_time_temp + 450
-                    min_store = j
-                    pallets_temp = pallets + data.iloc[min_store, 5]
-            
-                    cluster.pop(min_store) # Remove the cluster that has just been added
-            # Check where the next store should be inserted into route list
-        '''
 
-        min_duration_best= float("Inf")
+        # While not all the stores have been placed in the route
+        while len(cluster) > 0:
 
-        # Loop through every other (unvisited) store index
-        for v in cluster:  
+            # Initialise minimum additional time
+            min_duration_best= float("Inf")
+
+            # Loop through every other (unvisited) store index
+            for v in cluster:  
+                        
+                # Find min duration to node still in cluster
+                        
+                for u in range(1,len(route)-1): # Every index position that unvisited store could go in
+                    # hecking each i
+                    min_duration_temp = durations[route[u-1], v+1] + durations[v, route[u]+1] - durations[route[u-1], route[u]+1] # Both directions
+                    # Record if best time
+                    if(min_duration_temp < min_duration_best):
+                        min_duration_best = min_duration_temp
+                        store_ID = v
+                        position = u          
                     
-            # Find min duration to node still in cluster
-                    
-            for u in range(1,len(route)-1): # Every index position that unvisited store could go in
-                #Checking each i
-                min_duration_temp = durations[route[u], v+1] + durations[v, route[u+1]+1] # Both directions
-                # Recording if best time
-                if(min_duration_temp < min_duration_best):
-                    min_duration_best = min_duration_temp
-                    store_ID = v
-                    position = u          
-                
             # Insert best new node into array  
-            route.insert(position+1,store_ID)
+            cluster.pop(cluster.index(store_ID))
+            route.insert(position,store_ID)
             # Calculating total route time with this insertion point
             time += min_duration_best + 450
             pallets += data.iloc[v, 5]
 
-            '''            
-            # Output arrays
-            if(routeMatrix==[]): # If empty then the first 
-                routeMatrix[k] = temp_route
-                timeArray.append(temp_time)
-                pallets = pallets_temp + region[store_ID,5]
-            elif(temp_time<timeArray[k]):
-                routeMatrix[k] = temp_route
-                timeArray[k] = temp_time
-                pallets = pallets_temp + region[store_ID,5]
-            ''' 
 
         # Append the time and pallets of this route
         timeArray.append(time)
@@ -146,3 +122,4 @@ print(np.shape(routeMatrix))
 print(binary_route_matrix[:,110])
 print(len(timeArray))
 print(len(palletsArray))
+print(timeArray[0]) 
