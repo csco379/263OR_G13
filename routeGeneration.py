@@ -43,7 +43,7 @@ currentRoute = []
 
 temp_route = []
 # Initialising final time and route storage lists
-routeMatrix = []
+routeMatrix = np.zeros((84,5))
 timeArray = []
 palletsArray = []
 ############################################################
@@ -67,7 +67,9 @@ for k in range(len(sets)):
     st = node.index(min(node))
     route.append(cluster[st]) #####
     time += min(node) + 450 # Here only accounting for one way
+    # Acounting for distribution centre being extracted from data
     pallets += data.iloc[st, 5]
+ 
         # Remove added node from cluster ( last added node)
     cluster.pop(st)
 
@@ -127,7 +129,12 @@ for k in range(len(sets)):
             timeArray[k] = temp_time
             pallets = pallets_temp + region[store_ID,5]
         ''' 
-    routeMatrix.append(route)
+    routeMatrix[k,0] = route[0]
+    routeMatrix[k,1] = route[1]
+    routeMatrix[k,2] = route[2]
+    routeMatrix[k,3] = route[3]
+    routeMatrix[k,4] = route[4]
+    routeMatrix[k,5] = route[5]
     timeArray.append(time)
     palletsArray.append(pallets)
 
