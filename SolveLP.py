@@ -6,6 +6,27 @@ import itertools
 from Regions import set_boundaries
 from pulp import *
 
+
+# Read in the route matrix, route times and route pallet demands
+route_matrix = np.loadtxt(open("Binary_Route_Matrix.csv"), delimiter=",", skiprows=0)
+route_time_vector = np.loadtxt(open("Route_Times.csv"), delimiter=",", skiprows=0)
+route_pallets_vector = np.loadtxt(open("Route_Pallets.csv"), delimiter=",", skiprows=0)
+
+# Obtain the number of stores and potential routes to use
+n_stores, n_routes = np.shape(route_matrix)
+
+# Create a dictionary for the problem costs
+Cost_Parameters = {'NumTrucks' : 30, 
+                   'TruckPallets' : 26,
+                   'AverageRouteTime' : 14400,
+                   'TruckHourlyCost' : 225,
+                   'TruckShift' : 14400,
+                   'ExtraTimeCost' : 11/144,
+                   'WetLeasedCost' : 5/9}
+
+
+#########################################################################################
+
 #Converting the csv file to a list
 def csv_to_list(filename , headers = True):
     row = 1
@@ -68,7 +89,7 @@ def solve(routeNames, timeArray, routes)
     #Finding the number of trucks
     num_truck = 0
     for v in prob.variables():
-        if (v.varValue != 0) & (v.varValue != None):
+        if (v.varValue != 0) and (v.varValue != None):
                 num_truck += v.varValue
         
     #Number of trucks used pinted to the screen
@@ -79,7 +100,7 @@ def solve(routeNames, timeArray, routes)
         print(v.name, "=", v.varValue)
 
     #Optimised objective function value printed to the screen
-    print("Cost of Transporting Pallets = %.2f" % value(prob.objective))
+    print("Cost of Transporting Pallets = $ %.2f" % value(prob.objective))
 
     #Status of the problem is printed to the screen
     print("Status:", LpStatus[prob.status])
