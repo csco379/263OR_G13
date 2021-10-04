@@ -105,7 +105,7 @@ x_coords = np.zeros(n_stores+1)
 y_coords = np.zeros(n_stores+1)
 
 # Loop through stores
-for i in range(n_stores):
+for i in range(n_stores+1):
     # Calculate and store the coordinates
     if i !=55:
         store = Data_table1.iloc[i,:]

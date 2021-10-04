@@ -1,0 +1,148 @@
+# Alt version of routeGeneration.py [V2]
+
+
+# Libraries
+import numpy as np
+from numpy.core.einsumfunc import _einsum_path_dispatcher  #?????
+from numpy.lib.nanfunctions import _nanprod_dispatcher
+import pandas as pd
+import itertools
+from Regions import set_boundaries
+
+
+# Read in grouped data
+distributionCentre = pd.read_csv("Distribution_Centre_Data.csv")
+data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
+durations = pd.read_csv("WoolworthsTravelDurations.csv").to_numpy()
+# Distribution centre index
+DC = 55
+
+# Seperate the data into regions and convert to numpy arrays
+North = data.loc[data["Region"]=='North'].to_numpy()
+South = data.loc[data["Region"]=='South'].to_numpy()
+East = data.loc[data["Region"]=='East'].to_numpy()
+West = data.loc[data["Region"]=='West'].to_numpy()
+Central= data.loc[data["Region"]=='Central'].to_numpy()
+
+n_stores = len(North) + len(South) + len(East) + len(West) + len(Central)
+
+# Initialising total time, pallets lists + route storage matrix
+routeMatrix = np.empty((n_stores,0), int)
+timeArray = []
+palletsArray = []
+
+
+# Loop through each region
+for region in [North, South, East, West, Central]:
+
+    # Obtain ID set to get each unordered combination of 3 stores
+    ID_set = region[:,4]
+    sets = list(itertools.combinations(ID_set, 3)) + list(itertools.combinations(ID_set, 2)) + list(itertools.combinations(ID_set, 1))
+
+    # Cheapest Insertion - loop through each potential route/combination of stores
+    for k in range(len(sets)):
+
+        # Initialise lists for this route
+        pallets = 0                         # Number of pallets on this route
+        time = 0.0                          # Time for this route
+        cluster = list(sets[k])             # Stores visited in this route
+        first_time = []                     # List for time from the DC to each store in the route
+        route = [DC, DC]                    # List for ordered route
+
+        # Add the 'starting' time to each store, from the DC, to the array
+        first_time = [durations[DC, index+1] for index in cluster]
+        
+        # Select the minimum time and add to the route (symmetric assumption here) 
+        min_time_location = first_time.index(min(first_time))
+        route.insert(1, cluster[min_time_location])                        # List containing places visited, in order
+        time += min(first_time) + 450                                      # Update route's travel time
+        pallets += data.iloc[cluster[min_time_location], 5]                # Update route's total pallet demand
+        cluster.pop(min_time_location)                                     # Remove store from cluster
+
+        '''
+        if(len(sets[k]) > 3):
+        
+            for i in range(1,len(route)-1): # Checks distances from each next node in route to each node in the remaining cluster
+                for j in cluster: 
+                min_time_temp = durations[route[i], j+1] + durations[route[i+1], j+1]
+                if(i==0):
+                    min_time = time + min_time_temp + 450
+                    min_store = j
+                    pallets_temp = pallets + data.iloc[min_store, 5]
+                elif(min_time_temp<min_time):
+                    min_time = time + min_time_temp + 450
+                    min_store = j
+                    pallets_temp = pallets + data.iloc[min_store, 5]
+            
+                    cluster.pop(min_store) # Remove the cluster that has just been added
+            # Check where the next store should be inserted into route list
+        '''
+
+        min_duration_best= float("Inf")
+
+        # Loop through every other (unvisited) store index
+        for v in cluster:  
+                    
+            # Find min duration to node still in cluster
+                    
+            for u in range(1,len(route)-1): # Every index position that unvisited store could go in
+                #Checking each i
+                min_duration_temp = durations[route[u], v+1] + durations[v, route[u+1]+1] # Both directions
+                # Recording if best time
+                if(min_duration_temp < min_duration_best):
+                    min_duration_best = min_duration_temp
+                    store_ID = v
+                    position = u          
+                
+            # Insert best new node into array  
+            route.insert(position+1,store_ID)
+            # Calculating total route time with this insertion point
+            time += min_duration_best + 450
+            pallets += data.iloc[v, 5]
+
+            '''            
+            # Output arrays
+            if(routeMatrix==[]): # If empty then the first 
+                routeMatrix[k] = temp_route
+                timeArray.append(temp_time)
+                pallets = pallets_temp + region[store_ID,5]
+            elif(temp_time<timeArray[k]):
+                routeMatrix[k] = temp_route
+                timeArray[k] = temp_time
+                pallets = pallets_temp + region[store_ID,5]
+            ''' 
+
+        # Append the time and pallets of this route
+        timeArray.append(time)
+        palletsArray.append(pallets)
+
+        # Only get the indexes of stores visited now
+        route = route[1:-1]
+        # Store the store indexes in order: 0 if not visited, 1 visited first, and so on. 
+        route_info = np.zeros(n_stores)
+        for i in range(len(route)):
+            if route[i] < 55:
+                route_info[route[i]] = i + 1
+            else:
+                route_info[route[i]-1] = i + 1
+
+        # Append the route information to the route matrices
+        routeMatrix = np.append(routeMatrix, np.array([route_info]).T, axis=1)
+    
+
+# Obtain the binary route matrix, to be used in the linear program constraints
+binary_route_matrix = np.where(routeMatrix>0.01, 1, 0)
+
+       
+# Export the binary route matrix and route data as files, to be imported in the LP solver script
+np.savetxt("Binary_Route_Matrix.csv", binary_route_matrix, delimiter=',')
+np.savetxt("Route_Times.csv", timeArray, delimiter=',')
+np.savetxt("Route_Pallets.csv", palletsArray, delimiter=',')
+
+
+
+# Check some of the output, as a 'reality check'
+print(np.shape(routeMatrix))
+print(binary_route_matrix[:,110])
+print(len(timeArray))
+print(len(palletsArray))
