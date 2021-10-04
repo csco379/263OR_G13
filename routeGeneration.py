@@ -24,6 +24,7 @@ West = data.loc[data["Region"]=='West'].to_numpy()
 Central= data.loc[data["Region"]=='Central'].to_numpy()
 
 
+
 # Generalise for loop for each region
 region = North
 
@@ -36,14 +37,14 @@ sets = list(itertools.combinations(ID_set, 3))
 # Initialising lists
 ############################################################
 # Creating ordered route array to store outcome
-route = [DC] # Distribution centre ID is the first element of all routes
+route = [] # Distribution centre ID is the first element of all routes
 currentRoute = []
 node = []
 time= 0.0
 pallets = 0
 temp_route = []
 # Initialising final time and route storage lists
-routeMatrix = [[]]
+routeMatrix = []
 timeArray = []
 palletsArray = []
 ############################################################
@@ -53,88 +54,80 @@ for k in range(len(sets)):
     print(k) # To check progress whilst running 
     # 1 possible combination of stores
     cluster = list(sets[k])
-    
-    for n in cluster: # checks from distribution centre
+    print(cluster)
+    # Find closest store from distribution centre
+    for n in cluster: 
 
         # Indexing ID to find distance of each store in cluster from distribution 
         node.append(durations[DC, n+1]) # accounts for data frame shift (CHECK)
     
         # Select the minimum time and add to the route ( Symetric assumption here) 
-        route.append(node.index(min(node)))
-        time += min(node) + 7.5 # Here only accounting for one way
-        pallets += region[n, 5]
+    route.append(node.index(min(node)))
+    time += min(node) + 7.5 # Here only accounting for one way
+    pallets += data.iloc[n, 5]
         # Remove added node from cluster ( last added node)
-        cluster.pop(route[-1])
+    cluster.pop(node.index(min(node)))
 
-        while(cluster!=[]): # while nodes arent in the partial solution continue adding to route
-            #2d array row = current node number in partial solution, cols = number of nodes left to visit in cluster 
-            min_duration = np.zeros((len(route), len(cluster)))
-            time_back = np.zeros((len(route), len(cluster)))
-            # Check for next shortest route addition at insertion positions
-            # Need to check point in route that every store in cluster could be added
-            route.append(DC) # Distribution centre store
-            for i in range(len(route)-1): # Checks distances from each next node in route to each node in the remaining cluster
-                for j in range(len(cluster)): 
-                    min_time_temp = durations[route[i]-2, cluster[j]+1] + durations[route[i+1]-2, cluster[j]+1]
-                    if(j==0):
-                        min_time = time + min_time_temp + 7.5
-                        min_store = cluster[j]
-                        pallets_temp = pallets + region[min_store,5]
-                    elif(min_time_temp<min_time):
-                        min_time = time + min_time_temp + 7.5
-                        min_store = cluster[j]
-                        pallets_temp = pallets + region[min_store,5]
-                    # min_duration = every store in partial solution going to every store remaining and back to next store in solution
-                    # ( -1 accounts for dataframe feature : double check)
-                    #min_duration[i,j] = durations[route[i]-1, cluster[j]-1] + durations[route[i+1]-1, cluster[j]-1]
-                    # Time from node in cluster back to next node or the origin
-
-            # Find minimum combo in this array so can find associated store, add to route ( in correct spot depending on which node from then increment time and pallets (back time)
-            #min_index = divmod(min_duration.argmin(), min_duration.shape[1])        
-            #route.append(cluster[min_index[0]]) # Extracts row of min index which is the route that adds the least time 
-            #time += min_duration[min_duration[min_index[0]], min_duration[min_index[1]]] + 7.5     # Adding time of third added node   
-            #pallets += North[cluster[min_index[0]], 5]
-            #cluster.pop(route[min_index[0]]) # Remove the last appended node from cluster
-            # Cluster still has 1 store in it (for sets of 3)
-
-            # Check where the next store should be inserted into route list
+    #2d array row = current node number in partial solution, cols = number of nodes left to visit in cluster 
+    #min_duration = np.zeros((len(route), len(cluster)))
         
-            for v in range(len(route)):
-                temp_route = route # takes a copy 
-                # Find min duration to node still in cluster
-                for u in range(len(cluster)): # Start at 1 because the first element has been checked
-                    #Checking each i
-                    min_duration_temp = durations[route[v]-2, cluster[u]+1] + durations[cluster[u]-2, route[v+1]+1] # Both directions
-                    # Recording if best time
-                    if(v==0):
-                        min_duration_best = min_duration_temp
-                        store_ID = cluster[u]
-                    elif(min_duration_temp < min_duration_best):
-                        min_duration_best = min_duration_temp
-                        store_ID = cluster[u]
-                        
-            
-                # Insert best new node into array  
-                temp_route.insert(v+1,store_ID)
-                # Calculating total route time with this insertion point
-                temp_time = time + min_duration_best + 7.5
-                temp_pallets = pallets
-                
-                # Output arrays
-                if(v==0):
-                    routeMatrix[k] = temp_route
-                    timeArray.append(temp_time)
-                    pallets = pallets_temp + region[store_ID,5]
-                elif(temp_time<timeArray[k]):
-                    routeMatrix[k] = temp_route
-                    timeArray[k] = temp_time
-                    pallets = pallets_temp + region[store_ID,5]
-            
+    # Check for next shortest route addition at insertion positions
+    # Need to check point in route that every store in cluster could be added
+    route.append(DC) # Distribution centre store to end
+    route.insert(0,DC)
+    for i in range(len(route)-1): # Checks distances from each next node in route to each node in the remaining cluster
+        for j in cluster: 
+            min_time_temp = durations[route[i], j+1] + durations[route[i+1], j+1]
+            if(i==0):
+                min_time = time + min_time_temp + 7.5
+                min_store = j
+                pallets_temp = pallets + data.iloc[min_store, 5]
+            elif(min_time_temp<min_time):
+                min_time = time + min_time_temp + 7.5
+                min_store = j
+                pallets_temp = pallets + data.iloc[min_store, 5]
+    
+    cluster.pop(min_store) # Remove the cluster that has just been added
+    # Check where the next store should be inserted into route list
 
+    temp_time = 0
+    min_duration_best=2000000
+    for v in cluster:  # looks at every non visited store in cluster
+                 
+        # Find min duration to node still in cluster
+                
+        for u in range(len(route)-1): # Every index position that unvisited store could go in
+            #Checking each i
+            min_duration_temp = durations[route[u], v+1] + durations[v, route[u+1]+1] # Both directions
+            # Recording if best time
+            if(min_duration_temp < min_duration_best):
+                min_duration_best = min_duration_temp
+                store_ID = v
+                position = u          
+            
+        # Insert best new node into array  
+        route.insert(position+1,store_ID)
+        # Calculating total route time with this insertion point
+        temp_time += time + min_duration_best + 7.5
+        temp_pallets = pallets_temp 
+    '''            
+    # Output arrays
+    if(routeMatrix==[]): # If empty then the first 
+        routeMatrix[k] = temp_route
+        timeArray.append(temp_time)
+        pallets = pallets_temp + region[store_ID,5]
+    elif(temp_time<timeArray[k]):
+        routeMatrix[k] = temp_route
+        timeArray[k] = temp_time
+        pallets = pallets_temp + region[store_ID,5]
+    ''' 
+    routeMatrix.append(route)
+    timeArray.append(temp_time)
+    palletsArray.append(temp_pallets + data.iloc[min_store, 5])
 
        
                 
-print(routeMatrix)
+    print(routeMatrix)
 
 
 
