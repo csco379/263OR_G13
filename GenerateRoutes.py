@@ -11,7 +11,7 @@ from Regions import set_boundaries
 
 # Read in grouped data
 distributionCentre = pd.read_csv("Distribution_Centre_Data.csv")
-data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
+data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
 durations = pd.read_csv("WoolworthsTravelDurations.csv").to_numpy()
 # Distribution centre index
 DC = 55
@@ -110,7 +110,7 @@ for region in [North, South, East, West, Central]:
 # Obtain the binary route matrix, to be used in the linear program constraints
 binary_route_matrix = np.where(routeMatrix>0.01, 1, 0)
 
-       
+
 # Export the binary route matrix and route data as files, to be imported in the LP solver script
 np.savetxt("Binary_Route_Matrix.csv", binary_route_matrix, delimiter=',')
 np.savetxt("Route_Times.csv", timeArray, delimiter=',')

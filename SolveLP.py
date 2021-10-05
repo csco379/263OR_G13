@@ -28,6 +28,7 @@ Cost_Parameters = {'NumTrucks' : 30,
 
 # List of route labels
 Routes = [str(i) for i in range(n_routes)]
+Extra_Routes = [str(i) for i in range(n_routes)]
 
 
 #########################################################################################
@@ -46,8 +47,8 @@ def solveLP():
     prob = LpProblem("PalletProblem", LpMinimize)
 
     # The problem variables for whether each route is used
-    vars = LpVariable.dicts("Route", Routes, cat = "Binary")          # Normal trucks
-    extra_vars = LpVariable.dicts("ExRoute", Routes, cat = "Binary")  # Rental trucks
+    vars = LpVariable.dicts("Route", Routes, cat = "Binary")                # Normal trucks
+    extra_vars = LpVariable.dicts("ExRoute", Extra_Routes, cat = "Binary")  # Rental trucks
     # Variables for number of trucks
     n_trucks = LpVariable("NumTrucks", 0, 60, LpInteger)
     # Number of 4h rental block periods

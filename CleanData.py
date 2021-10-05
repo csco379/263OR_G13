@@ -60,18 +60,19 @@ Data_table2["ID"]=Data_table2.index
 # Data_table1 will be used to solve the LP when only Countdown stores have nonzero demand; this occurs weekly
 # Note the LP doesn't need to be solved when no stores have demand (which occurs weekly)
 [n_stores, n_days] = Demand_file.shape
+n_days -= 1
 demands1 = np.zeros(n_stores + 1)
 demands2 = np.zeros(n_stores + 1)
 
 # Process the demands and obtain a conservative estimate for each. These will be used to generate routes
 # Use the Xth percentile value as the demand for each store
-X = 70
+X = 75
 
 # Loop through each stores
 for i in range(n_stores):
 
     # Get demands on all days
-    store_demands = Demand_file.iloc[i][1:n_days]
+    store_demands = Demand_file.iloc[i][1:]
 
     # Calculate and store the Xth percentile, excluding the days with no demand
     nonzero_demands = [value for value in store_demands if value != 0]
@@ -79,12 +80,15 @@ for i in range(n_stores):
 
     if i < 55:
         demands1[i] = estimate
-    elif i > 55:
+    elif i >= 55:
         demands1[i+1] = estimate
 
     # Update the demand on days when just Countdown has nonzero demand 
-    if "Countdown" in Demand_file["Store"][i] and i != 55:
-        demands2[i] = estimate
+    if "Countdown" in Demand_file["Store"][i]:
+        if i<55:
+            demands2[i] = estimate
+        elif i>55:
+            demands2[i+1] = estimate
 
 # Append the demand estimates to the data tables
 Data_table1['Demand Estimate'] = demands1
