@@ -37,7 +37,7 @@ for region in [North, South, East, West, Central]:
 
     # Obtain ID set to get each unordered combination of 3 stores
     ID_set = region[:,4]
-    sets = list(itertools.combinations(ID_set, 3)) + list(itertools.combinations(ID_set, 2)) + list(itertools.combinations(ID_set, 1))
+    sets = list(itertools.combinations(ID_set, 4)) + list(itertools.combinations(ID_set, 3)) + list(itertools.combinations(ID_set, 2)) + list(itertools.combinations(ID_set, 1))
 
     # Cheapest Insertion - loop through each potential route/combination of stores
     for k in range(len(sets)):
@@ -118,8 +118,8 @@ np.savetxt("Route_Pallets.csv", palletsArray, delimiter=',')
 
 
 # Check some of the output, as a 'reality check'
-print(np.shape(routeMatrix))
-print(binary_route_matrix[:,110])
-print(len(timeArray))
-print(len(palletsArray))
-print(timeArray[0]) 
+# print(np.shape(routeMatrix))
+# print(binary_route_matrix[:,110])
+# print(len(timeArray))
+# print(len(palletsArray))
+# print(timeArray[0]) 
