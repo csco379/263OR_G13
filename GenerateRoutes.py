@@ -55,7 +55,8 @@ for region in [North, South, East, West, Central]:
         # Select the minimum time and add to the route (symmetric assumption here) 
         min_time_location = first_time.index(min(first_time))
         route.insert(1, cluster[min_time_location])                        # List containing places visited, in order
-        time += 2 * min(first_time) + 450                                  # Update route's travel time
+        returntime = durations[route[1], DC + 1]
+        time += returntime + min(first_time) + 450                         # Update route's travel time
         pallets += data.iloc[cluster[min_time_location], 5]                # Update route's total pallet demand
         cluster.pop(min_time_location)                                     # Remove store from cluster
 

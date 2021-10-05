@@ -6,6 +6,8 @@ import itertools
 from Regions import set_boundaries
 from pulp import *
 
+# Read in route name data
+route_name_data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
 
 # Read in the route matrix, route times and route pallet demands
 route_matrix = np.loadtxt(open("Binary_Route_Matrix.csv"), delimiter=",", skiprows=0)
@@ -44,14 +46,14 @@ def solveLP():
     prob = LpProblem("PalletProblem", LpMinimize)
 
     # The problem variables for whether each route is used
-    vars = LpVariable.dicts("Route", Routes, 0, 1, "LpBinary")
-    extra_vars = LpVariable.dicts("ExRoute", Routes, 0, 1, "LpBinary")
-    
+    vars = LpVariable.dicts("Route", Routes, cat = "Binary")          # Normal trucks
+    extra_vars = LpVariable.dicts("ExRoute", Routes, cat = "Binary")  # Rental trucks
     # Variables for number of trucks
     n_trucks = LpVariable("NumTrucks", 0, 60, LpInteger)
-    # extra_trucks = LpVariable("Extra_Trucks", 0, None, LpInteger)
+    # Number of 4h rental block periods
     N_lease = LpVariable("NumExtraTrucks", 0, None, LpInteger)
-    num_routes_used = LpVariable("NumRoutesUsed", 0, None, LpInteger)
+    # Total number of routes used
+    num_routes_used = LpVariable("NumR", 0, None, LpInteger)
 
     # Objective function (total no. of routes used * cost of each route)
     prob += lpSum([vars[str(i)] * route_costs[i] for i in range(n_routes)]) + 2000 * N_lease, "Cost of transporting pallets"
@@ -66,17 +68,21 @@ def solveLP():
     # Conostraint on extra time spent by rental trucks
     prob += lpSum([extra_vars[str(i)] * route_time_vector[i] for i in range (n_routes)]) <= 14400 * N_lease
 
-    # No route can exceed 5h, to allow for reasonable shift times
+    # No normal truck route can exceed 5h, to allow for reasonable shift times
     for i in range(n_routes):
         prob += vars[str(i)] * route_time_vector[i] <= 18000
 
-    # Constraint on pallet demand
+    # Constraint on pallet demand for normal trucks
     for i in range(n_routes):
         prob += vars[str(i)] * route_pallets_vector[i] <= 26
 
-    # Number of trucks
-    prob += lpSum(vars[str(i)] for i in range(n_routes)) <= n_trucks
+    # Number of trucks constraints
+    prob += lpSum(vars[str(i)] for i in range(n_routes)) == n_trucks
+    prob += n_trucks <= 60
     prob += lpSum([vars[str(i)] + extra_vars[str(i)] for i in range(n_routes)]) == num_routes_used
+
+
+    ### Solve and print output ###
 
     #Writing the problem data to an lp file
     prob.writeLP("PalletProblem.lp")
@@ -92,8 +98,35 @@ def solveLP():
     #Optimised objective function value printed to the screen
     print("Cost of Transporting Pallets [1 All-Open Day] = $%.2f" % value(prob.objective))
 
+    # Print all routes used
+    count = 0
+    print("\nList of routes used in optimal solution:")
+    for v in prob.variables():
+        if type(v.varValue) != None and "Route" in v.name:
+            if v.varValue > 0:
+
+                # Obtain route number and stores visited, and add to string
+                route_number = int(v.name.split('_')[1])
+                route_info = route_matrix[:, route_number]
+                indices = np.where(route_info == 1)[0]
+                names = ""
+
+                for i in indices:
+                    if i < 55:
+                        names += "  " + route_name_data.iloc[i, 1]
+                    else:
+                        names += "  " + route_name_data.iloc[i+1, 1]
+                    count += 1
+
+                print(v.name + ", DELIVERING TO:   " + names)
+
+    allvisited = "False"
+    if count == 65:
+        allvisited = "True"
+    print(count, " stores visited - all visited = ", allvisited)
+
     #Status of the problem is printed to the screen
-    print("Status:", LpStatus[prob.status])
+    print("\nStatus:", LpStatus[prob.status])
 
 
 if __name__ == "__main__":
