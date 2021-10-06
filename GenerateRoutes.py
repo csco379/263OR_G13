@@ -14,10 +14,12 @@ def generate_route_sets(Weekday, name):
     distributionCentre = pd.read_csv("Distribution_Centre_Data.csv")
     durations = pd.read_csv("WoolworthsTravelDurations.csv").to_numpy()
 
-    if Weekday == True:
-        data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
-    else:
-        data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
+    #if Weekday == True:
+        #data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
+    #else:
+        #data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
+
+    data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
 
     # Distribution centre index
     DC = 55

@@ -68,32 +68,27 @@ demands2 = np.zeros(n_stores + 1)
 # Use the Xth percentile value as the demand for each store
 X = 75
 
+Data_table1['Demand Estimate'] = np.zeros(n_stores + 1)
+Data_table2['Demand Estimate'] = np.zeros(n_stores + 1)
+
+
+
 # Loop through each stores
 for i in range(n_stores):
 
     # Get demands on all days
-    store_demands = Demand_file.iloc[i][1:]
+    storename = Demand_file['Store'].iloc[i]
+    store_data = Demand_file.loc[Demand_file['Store'] == storename]
+    store_demands = store_data.iloc[0, 1:].values.tolist()
 
     # Calculate and store the Xth percentile, excluding the days with no demand
     nonzero_demands = [value for value in store_demands if value != 0]
     estimate = np.percentile(nonzero_demands, X)
+    storeindex = Data_table1.index[Data_table1.Store == storename]
+    Data_table1.at[storeindex, 'Demand Estimate'] = estimate
 
-    if i < 55:
-        demands1[i] = estimate
-    elif i >= 55:
-        demands1[i+1] = estimate
-
-    # Update the demand on days when just Countdown has nonzero demand 
-    if "Countdown" in Demand_file["Store"][i]:
-        if i<55:
-            demands2[i] = estimate
-        elif i>55:
-            demands2[i+1] = estimate
-
-# Append the demand estimates to the data tables
-Data_table1['Demand Estimate'] = demands1
-Data_table2['Demand Estimate'] = demands2
-
+    if ("Countdown" in storename) and "Metro" not in storename:
+        Data_table2.at[storeindex, 'Demand Estimate'] = estimate
 
 
 ###########################################################################################################

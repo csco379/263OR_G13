@@ -19,7 +19,8 @@ Cost_Parameters = {'NumTrucks' : 30,
                    'ExtraTruckTime' : 275,
                    'TruckShift' : 14400,
                    'ExtraTimeCost' : 11/144,
-                   'WetLeasedCost' : 2000}
+                   'WetLeasedCost' : 2000,
+                   'MaxRouteTime' : 18000}
 
 #########################################################################################
 
@@ -75,11 +76,12 @@ def solveLP(Weekday):
             prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
     else:
         for i in range(n_stores):
-            if i < 55:
+            storename = route_name_data['Store'].iloc[i]
+            if "Countdown" in storename and "Metro" not in storename:
                 prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
             else:
                 prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 0
-
+        
     # Max 4 hours per route, on average
     prob += lpSum(vars[str(i)] * route_time_vector[i] - Cost_Parameters["AverageRouteTime"] * vars[str(i)] for i in range(n_routes)) <= 0
 
@@ -88,7 +90,7 @@ def solveLP(Weekday):
 
     # No normal truck route can exceed 5h, to allow for reasonable shift times
     for i in range(n_routes):
-        prob += vars[str(i)] * route_time_vector[i] <= 18000
+        prob += vars[str(i)] * route_time_vector[i] <= Cost_Parameters["MaxRouteTime"]
 
     # Constraint on pallet demand for normal trucks
     for i in range(n_routes):
@@ -133,16 +135,13 @@ def solveLP(Weekday):
                 names = ""
 
                 for i in indices:
-                    if i < 55:
                         names += "  " + route_name_data.iloc[i, 1]
-                    else:
-                        names += "  " + route_name_data.iloc[i+1, 1]
-                    count += 1
+                        count += 1
 
                 print(v.name + ", DELIVERING TO:   " + names)
 
     allvisited = "False"
-    if (Weekday == True and count == 65) or (Weekday == False and count == 55):
+    if (Weekday == True and count == 65) or (Weekday == False and count == 53):
         allvisited = "True"
     print(count, " stores visited - all visited = ", allvisited)
 

@@ -169,3 +169,28 @@ print(routeMatrix[0])
 
 
 
+### OLD CLEANDATA CODE ###
+
+    # storename = Data_table1['Store'].iloc[i]
+    # store_data = Demand_file.loc[Demand_file['Store'] == storename]
+    # store_demands = store_data.iloc[0, 1:].values.tolist()
+
+    # # Calculate and store the Xth percentile, excluding the days with no demand
+    # nonzero_demands = [value for value in store_demands if value != 0]
+    # estimate = np.percentile(nonzero_demands, X)
+
+    # if i < 55:
+    #     demands1[i] = estimate
+    # elif i >= 55:
+    #     demands1[i+1] = estimate
+
+    # # Update the demand on days when just Countdown has nonzero demand (excluding 2 certain stores)
+    # if ("Countdown" in Demand_file["Store"][i]) and ("Metro Albert Street" not in Demand_file["Store"][i]) and ("Metro Holsey Street" not in Demand_file["Store"][i]):
+    #     if i<55:
+    #         demands2[i] = estimate
+    #     elif i>55:
+    #         demands2[i+1] = estimate
+
+# Append the demand estimates to the data tables
+#Data_table1['Demand Estimate'] = demands1
+#Data_table2['Demand Estimate'] = demands2
