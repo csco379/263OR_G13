@@ -60,11 +60,12 @@ def generate_route_sets(Weekday, name):
             
             # Select the minimum time and add to the route (symmetric assumption here) 
             min_time_location = first_time.index(min(first_time))
-            route.insert(1, cluster[min_time_location])                        # List containing places visited, in order
+            route.insert(1, cluster[min_time_location])                         # List containing places visited, in order
             returntime = durations[route[1], DC + 1]
-            time += returntime + min(first_time) + 450                         # Update route's travel time
-            pallets += data.iloc[cluster[min_time_location], 5]                # Update route's total pallet demand
-            cluster.pop(min_time_location)                                     # Remove store from cluster
+            singlestorepallets =  data.iloc[cluster[min_time_location], 5]      # Update route's travel time
+            pallets += singlestorepallets                                       # Update route's total pallet demand
+            time += returntime + min(first_time) + 450 * singlestorepallets
+            cluster.pop(min_time_location)                                      # Remove store from cluster
 
 
             # While not all the stores have been placed in the route
@@ -91,8 +92,9 @@ def generate_route_sets(Weekday, name):
                 cluster.pop(cluster.index(store_ID))
                 route.insert(position,store_ID)
                 # Calculating total route time with this insertion point
-                time += min_duration_best + 450
-                pallets += data.iloc[v, 5]
+                singlestorepallets =  data.iloc[v, 5]
+                time += min_duration_best + 450 * singlestorepallets
+                pallets += singlestorepallets
 
 
             # Append the time and pallets of this route
