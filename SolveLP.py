@@ -16,9 +16,10 @@ Cost_Parameters = {'NumTrucks' : 30,
                    'TruckPallets' : 26,
                    'AverageRouteTime' : 14400,
                    'TruckHourlyCost' : 225,
+                   'ExtraTruckTime' : 275,
                    'TruckShift' : 14400,
                    'ExtraTimeCost' : 11/144,
-                   'WetLeasedCost' : 5/9}
+                   'WetLeasedCost' : 2000}
 
 #########################################################################################
 
@@ -47,10 +48,10 @@ def solveLP(Weekday):
     # Obtain cost of each route
     route_costs = np.zeros(n_routes)
     for i in range(n_routes):
-        if route_time_vector[i] < 14400:
-            route_costs[i] = route_time_vector[i] * 1/16
+        if route_time_vector[i] < Cost_Parameters['TruckShift']:
+            route_costs[i] = route_time_vector[i] * Cost_Parameters['TruckHourlyCost']/(60**2)
         else:
-            route_costs[i] = (14400)*(1/16) + (route_time_vector[i] - 4) * (11/144)
+            route_costs[i] = (Cost_Parameters['TruckShift'])*(Cost_Parameters['TruckHourlyCost']/(60**2)) + (route_time_vector[i] - Cost_Parameters['TruckShift']) * (Cost_Parameters['ExtraTruckTime']/(60**2))
 
     # Creating the problem
     prob = LpProblem("PalletProblem", LpMinimize)
@@ -59,14 +60,14 @@ def solveLP(Weekday):
     vars = LpVariable.dicts("Route", Routes, cat = "Binary")                # Normal trucks
     extra_vars = LpVariable.dicts("ExRoute", Extra_Routes, cat = "Binary")  # Rental trucks
     # Variables for number of trucks
-    n_trucks = LpVariable("NumTrucks", 0, 60, LpInteger)
+    n_trucks = LpVariable("NumTrucks", 0, 2*Cost_Parameters['NumTrucks'], LpInteger)
     # Number of 4h rental block periods
     N_lease = LpVariable("NumExtraTrucks", 0, None, LpInteger)
     # Total number of routes used
     num_routes_used = LpVariable("NumR", 0, None, LpInteger)
 
     # Objective function (total no. of routes used * cost of each route)
-    prob += lpSum([vars[str(i)] * route_costs[i] for i in range(n_routes)]) + 2000 * N_lease, "Cost of transporting pallets"
+    prob += lpSum([vars[str(i)] * route_costs[i] for i in range(n_routes)]) + Cost_Parameters['WetLeasedCost'] * N_lease, "Cost of transporting pallets"
 
     # Constraint for one route per node
     if Weekday == True:
@@ -80,7 +81,7 @@ def solveLP(Weekday):
                 prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 0
 
     # Max 4 hours per route, on average
-    prob += lpSum(vars[str(i)] * route_time_vector[i] - 14400 * vars[str(i)] for i in range(n_routes)) <= 0
+    prob += lpSum(vars[str(i)] * route_time_vector[i] - Cost_Parameters["AverageRouteTime"] * vars[str(i)] for i in range(n_routes)) <= 0
 
     # Conostraint on extra time spent by rental trucks
     prob += lpSum([extra_vars[str(i)] * route_time_vector[i] for i in range (n_routes)]) <= 14400 * N_lease
@@ -91,11 +92,11 @@ def solveLP(Weekday):
 
     # Constraint on pallet demand for normal trucks
     for i in range(n_routes):
-        prob += vars[str(i)] * route_pallets_vector[i] <= 26
+        prob += vars[str(i)] * route_pallets_vector[i] <= Cost_Parameters["TruckPallets"]
 
     # Number of trucks constraints
     prob += lpSum(vars[str(i)] for i in range(n_routes)) == n_trucks
-    prob += n_trucks <= 60
+    prob += n_trucks <= 2 * Cost_Parameters["NumTrucks"]
     prob += lpSum([vars[str(i)] + extra_vars[str(i)] for i in range(n_routes)]) == num_routes_used
 
 
@@ -113,7 +114,10 @@ def solveLP(Weekday):
     print("Number of routes used: ", num_routes_used.varValue)    
 
     #Optimised objective function value printed to the screen
-    print("Cost of Transporting Pallets [1 All-Open Day] = $%.2f" % value(prob.objective))
+    if Weekday == True:
+        print("Cost of Transporting Pallets [1 Weekday, all stores open] = $%.2f" % value(prob.objective))
+    else:
+        print("Cost of Transporting Pallets [1 Weekend day, only Countdown open] = $%.2f" % value(prob.objective))
 
     # Print all routes used
     count = 0
