@@ -6,16 +6,10 @@ import itertools
 from Regions import set_boundaries
 from pulp import *
 
-# Read in route name data
-route_name_data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
-
 # Read in the route matrix, route times and route pallet demands
-route_matrix = np.loadtxt(open("Binary_Route_Matrix.csv"), delimiter=",", skiprows=0)
-route_time_vector = np.loadtxt(open("Route_Times.csv"), delimiter=",", skiprows=0)
-route_pallets_vector = np.loadtxt(open("Route_Pallets.csv"), delimiter=",", skiprows=0)
-
-# Obtain the number of stores and potential routes to use
-n_stores, n_routes = np.shape(route_matrix)
+#route_matrix = np.loadtxt(open("Binary_Route_Matrix.csv"), delimiter=",", skiprows=0)
+#route_time_vector = np.loadtxt(open("Route_Times.csv"), delimiter=",", skiprows=0)
+#route_pallets_vector = np.loadtxt(open("Route_Pallets.csv"), delimiter=",", skiprows=0)
 
 # Create a dictionary for the problem costs
 Cost_Parameters = {'NumTrucks' : 30, 
@@ -26,14 +20,29 @@ Cost_Parameters = {'NumTrucks' : 30,
                    'ExtraTimeCost' : 11/144,
                    'WetLeasedCost' : 5/9}
 
-# List of route labels
-Routes = [str(i) for i in range(n_routes)]
-Extra_Routes = [str(i) for i in range(n_routes)]
-
-
 #########################################################################################
 
-def solveLP():
+def solveLP(Weekday):
+
+    # Read in route data
+    if Weekday == True:
+        route_name_data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
+        route_matrix = np.loadtxt(open("Route_Matrix_Weekday.csv"), delimiter=",", skiprows=0)
+        route_time_vector = np.loadtxt(open("Route_Times_Weekday.csv"), delimiter=",", skiprows=0)
+        route_pallets_vector = np.loadtxt(open("Route_Pallets_Weekday.csv"), delimiter=",", skiprows=0)
+    else:
+        route_name_data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
+        route_matrix = np.loadtxt(open("Route_Matrix_Weekend.csv"), delimiter=",", skiprows=0)
+        route_time_vector = np.loadtxt(open("Route_Times_Weekend.csv"), delimiter=",", skiprows=0)
+        route_pallets_vector = np.loadtxt(open("Route_Pallets_Weekend.csv"), delimiter=",", skiprows=0)
+
+    # Obtain the number of stores and potential routes to use
+    n_stores, n_routes = np.shape(route_matrix)
+
+    # List of route labels
+    Routes = [str(i) for i in range(n_routes)]
+    Extra_Routes = [str(i) for i in range(n_routes)]
+
 
     # Obtain cost of each route
     route_costs = np.zeros(n_routes)
@@ -60,8 +69,15 @@ def solveLP():
     prob += lpSum([vars[str(i)] * route_costs[i] for i in range(n_routes)]) + 2000 * N_lease, "Cost of transporting pallets"
 
     # Constraint for one route per node
-    for i in range(n_stores):
-        prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
+    if Weekday == True:
+        for i in range(n_stores):
+            prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
+    else:
+        for i in range(n_stores):
+            if i < 55:
+                prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
+            else:
+                prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 0
 
     # Max 4 hours per route, on average
     prob += lpSum(vars[str(i)] * route_time_vector[i] - 14400 * vars[str(i)] for i in range(n_routes)) <= 0
@@ -122,14 +138,16 @@ def solveLP():
                 print(v.name + ", DELIVERING TO:   " + names)
 
     allvisited = "False"
-    if count == 65:
+    if (Weekday == True and count == 65) or (Weekday == False and count == 55):
         allvisited = "True"
     print(count, " stores visited - all visited = ", allvisited)
 
     #Status of the problem is printed to the screen
-    print("\nStatus:", LpStatus[prob.status])
+    print("Status:", LpStatus[prob.status])
+    print("\n")
 
 
 if __name__ == "__main__":
 
-    solveLP()
+    solveLP(Weekday=True)
+    solveLP(Weekday=False)
