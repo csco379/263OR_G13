@@ -110,7 +110,7 @@ def generate_route_sets(Weekday, name):
             for i in range(len(route)):
                 if route[i] < 55:
                     route_info[route[i]] = i + 1
-                else:
+                elif route[i] > 55:
                     route_info[route[i]-1] = i + 1
 
             # Append the route information to the route matrices
@@ -125,6 +125,10 @@ def generate_route_sets(Weekday, name):
     np.savetxt("Route_Matrix_" + name + ".csv", binary_route_matrix, delimiter=',')
     np.savetxt("Route_Times_" + name + ".csv", timeArray, delimiter=',')
     np.savetxt("Route_Pallets_" + name + ".csv", palletsArray, delimiter=',')
+
+    # Export the non-binary route matrix as file
+    np.savetxt("Ordered_Route_Matrix.csv", routeMatrix, delimiter=',')
+
 
     # Check some of the output, as a 'reality check'
     # print(np.shape(routeMatrix))
