@@ -135,8 +135,12 @@ def solveLP(Weekday):
                 names = ""
 
                 for i in indices:
+                    if i < 55:
                         names += "  " + route_name_data.iloc[i, 1]
-                        count += 1
+                    else:
+                        names += "  " + route_name_data.iloc[i+1, 1]
+
+                    count += 1
 
                 print(v.name + ", DELIVERING TO:   " + names)
 
