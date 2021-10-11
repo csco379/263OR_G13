@@ -123,6 +123,7 @@ def solveLP(Weekday):
 
     # Print all routes used
     count = 0
+    routeVector = list()
     print("\nList of routes used in optimal solution:")
     for v in prob.variables():
         if type(v.varValue) != None and "Route" in v.name:
@@ -143,7 +144,10 @@ def solveLP(Weekday):
                     count += 1
 
                 print(v.name + ", DELIVERING TO:   " + names)
-
+                routeVector.append(route_number)
+                # Recording the routes used in solution so that it can be plotted
+    #routeVector = [list(int(v.name.split('_')[1])) for v in prob.variables]
+    np.savetxt( "RouteVector.csv",routeVector  , delimiter=',')
     allvisited = "False"
     if (Weekday == True and count == 65) or (Weekday == False and count == 53):
         allvisited = "True"
@@ -157,4 +161,4 @@ def solveLP(Weekday):
 if __name__ == "__main__":
 
     solveLP(Weekday=True)
-    solveLP(Weekday=False)
+    #solveLP(Weekday=False)
