@@ -9,7 +9,7 @@ import folium
 ORSkey = "5b3ce3597851110001cf6248354cfef3acb24131a10df048bf5cddaf"
 
 data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
-'''
+
 coords = data[['Long', 'Lat']]
 coords = coords.to_numpy().tolist()
 
@@ -35,15 +35,34 @@ for i in range(0, len(coords)):
         icon = "map-piin"
     elif "Distribution" in data.Store[i]:
         icon = "certificate"
-
+# Add a key for the different icons
 
     folium.Marker(list(reversed(coords[i])), popup =data.Store[i], icon = folium.Icon(color = iconCol, icon=icon)).add_to(m)
-m
+m.save("RegionMap.html")
+
+########################################### Route Visualisation #################################################################
+import openrouteservice as ors
+# Import list of routes with which stores are in it 
+# Plot each route on a map of Auckland
+#Weekday
+
+
+client = ors.Client(key=ORSkey)
+# 
+route = client.directions(coordinates = coordinateStore, profile='driving-hgv', formate = 'geojson', validate = False)
+
+
+
+
+
+
+#Weekend
+
+
+
+########################################### Demand Visualisation ############################################
+
 '''
-############################################################################################################
-
-
-# Demand Visualisation
 
 import seaborn as sns
 import matplotlib.pyplot as plt ###???
@@ -113,14 +132,15 @@ fig2 = plt.figure()
 #sns.displot(data_nonZero, x= "Store", y= "Demand", col= "Region", ax=ax[1] )
 # Removing distribution centre for demand estimation plot
 #data_someZero.drop(index= 55, axis=0, inplace=True)
-'''
+
 g = sns.catplot(x= "Region", y= "Demand Estimate", hue="Store", kind="bar", data =data_someZero, dodge=True, col="Region", col_wrap=3, sharex=False, palette=sns.color_palette("rocket"), )
 for axes in g.axes.ravel():
     axes.legend()
 #g.axes.ravel()
 plt.show()
-'''
+
 
 
 
 plt.show()
+'''
