@@ -43,38 +43,33 @@ m.save("RegionMap.html")
 ########################################### Route Visualisation #################################################################
 
 # Import list of routes with which stores are in it as a numpy array
-data_nonZero = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
+data_nonZero = pd.read_csv("Store_Data_Nonzero_GROUPED.csv").to_numpy()
+data_someZero = pd.read_csv("Store_Data_Some_zero_GROUPED.csv").to_numpy()
 
-coords = data_nonZero[['Store', 'Long', 'Lat']]
-#coords = coords.to_numpy().tolist()
+allRoutes = pd.read_csv("Route_Matrix_Weekday.csv").to_numpy()
+routeNumbers = pd.read_csv("RouteNumbers.csv").to_numpy()
+routeStores = pd.read_csv("RouteStores.csv").to_numpy()
 
+route = np.zeroes((len(routeNumbers), 1))
 
-route = [None]*21
-# List of routes used in optimal solution:
-route[0] = ["Countdown Mangere Mall"]
-route[1]= ["Countdown Botany Downs",  "Countdown Howick",  "Countdown Meadowlands",  "FreshChoice Half Moon Bay"]
-route[2] = ["Countdown Birkenhead",  "Countdown Glenfield",  "Countdown Northcote"]
-route[3] = ["Countdown Aviemore Drive",  "Countdown Highland Park",  "Countdown Pakuranga"]
-route[4] = ["Countdown Meadowbank",  "Countdown St Johns",  "FreshChoice Otahuhu"]
-route[5] = ["Countdown Mt Wellington",  "Countdown Sylvia Park"]
-route[6] = ["Countdown Blockhouse Bay",  "Countdown Kelston",  "SuperValue Avondale",  "SuperValue Titirangi"]
-route[7] = ["Countdown Browns Bay",  "Countdown Mairangi Bay"]
-route[8] = ["Countdown Hauraki Corner",  "Countdown Takapuna"]
-route[9] = ["Countdown Milford",  "Countdown Sunnynook"]
-route[10] = ["Countdown Henderson",  "Countdown Lincoln Road",  "Countdown Lynmall",  "SuperValue Palomino"]
-route[11] = ["Countdown Hobsonville",  "Countdown Lynfield",  "Countdown Northwest",  "FreshChoice Ranui"]
-route[12] = ["Countdown Te Atatu",  "Countdown Te Atatu South",  "Countdown Westgate",  "FreshChoice Glen Eden"]
-route[13] = ["Countdown Airport",  "Countdown Roselands",  "Countdown Takanini",  "SuperValue Papakura"]
-route[14] = ["Countdown Mangere East",  "Countdown Manukau Mall",  "Countdown Papatoetoe", " SuperValue Flatbush"]
-route[15] = ["Countdown Greenlane ", "Countdown Newmarket",  "Countdown Onehunga",  "Countdown Metro Albert Street"]
-route[16] = ["Countdown Grey Lynn",  "Countdown Mt Eden",  "Countdown Ponsonby",  "Countdown Metro Halsey Street"]
-route[17] = ["Countdown Grey Lynn Central",  "Countdown Pt Chevalier",  "FreshChoice Mangere Bridge"]
-route[18] = ["Countdown Mt Roskill",  "Countdown St Lukes",  "Countdown Three Kings"]
-route[19] = ["Countdown Auckland City",  "Countdown Victoria", "Street West"]
-route[20] = ["Countdown Manukau",  "Countdown Manurewa",  "Countdown Papakura"]
+# Initialising an array to store the list of stores in the correct order for each route
+rearranged = [None]*len(routeStores)
+for i in range(0,len(allRoutes)):
+    index = allRoutes[routeNumbers[i]]
+    indexStores = routeStores[i]
 
+    # Adding the distribution centre as the first store visited
+    rearranged[i] = (data_nonZero[55, 3], data_nonZero[55, 2])
 
+    # Find the order of stores that are stored in index and rearrange them in rearranged
+    for j in range(0,len(index)):
+        for n in range(0,len(index)):
+            if(index[j]==indexStores[n]): # 0
+                # Appending the long then lat of the store 
+                rearranged[i].append((data_nonZero[indexStores[n], 3],data_nonZero[indexStores[n], 2])) 
 
+    # Appending the distribution centre as the last store visited. 
+    rearranged[i] = (data_nonZero[55, 3], data_nonZero[55, 2])
 
 
 # Plot each route on a map of Auckland
@@ -83,16 +78,19 @@ route[20] = ["Countdown Manukau",  "Countdown Manurewa",  "Countdown Papakura"]
 # Each row is a route 
 # If row is not empty (sum != 0) then nodes ordered 0 12 3 
 client = ors.Client(key=ORSkey)
-routeMapped = []
+routeMapped = [None]*len(routeNumbers)
 # 
-for i in range (0,len(route)):
-    for j in range (1,len(route[i])):
-        routeMapped.append( client.directions(coordinates = [coords[route[i][j-1]],coords[route[i][j]]], profile='driving-hgv', formate = 'geojson', validate = False))
+for i in range (0,len(routeNumbers)):
+    for j in range (0,len(route[i])-1):
+        routeMapped.append( client.directions(coordinates = [rearranged[i,j],rearranged[i,j+1]], profile='driving-hgv', formate = 'geojson', validate = False))
 
 
 routeMap = folium.Map(location=list(reversed(coords[2])), zoom_start=10)
-folium.PolyLine(locations = [list(reversed(coords)) for coords in route['features'][0]['geometry']['coordinates']]).add_to(routeMap)
 
+for i in range(len(routeNumbers)):
+    folium.PolyLine(locations = [list(rearranged) for rearranged in routeMapped['features'][0]['geometry']['coordinates']]).add_to(routeMap)
+
+routeMap.save("WeekdayRoutesMap.html")
 
 #Weekend
 
