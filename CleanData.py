@@ -66,11 +66,10 @@ demands2 = np.zeros(n_stores + 1)
 
 # Process the demands and obtain a conservative estimate for each. These will be used to generate routes
 # Use the Xth percentile value as the demand for each store
-X = 60
+X = 75
 
 Data_table1['Demand Estimate'] = np.zeros(n_stores + 1)
 Data_table2['Demand Estimate'] = np.zeros(n_stores + 1)
-
 
 
 # Loop through each stores
@@ -161,14 +160,14 @@ Data_table2.to_csv("Store_Data_Some_zero.csv", index=False)
 ###########################################################################################################
 
 # Check code is valid by plotting the stores
-f,ax = plt.subplots()
-ax.set_title("Visualisation of Stores in Cartesian Coordinates")
-for i in range(n_stores):
-    store = Data_table1.iloc[i,:]
-    ax.plot(store["x"],store["y"], 'kx')
-for j in range(n_dist):
-    ax.plot(distribution_data.iloc[j]["x"],distribution_data.iloc[j]["y"], 'rx', markersize=12)
-plt.show()
+# f,ax = plt.subplots()
+# ax.set_title("Visualisation of Stores in Cartesian Coordinates")
+# for i in range(n_stores):
+#     store = Data_table1.iloc[i,:]
+#     ax.plot(store["x"],store["y"], 'kx')
+# for j in range(n_dist):
+#     ax.plot(distribution_data.iloc[j]["x"],distribution_data.iloc[j]["y"], 'rx', markersize=12)
+# plt.show()
 
 # Print total average
 # average = Data_table1["Demand Estimate"].mean()

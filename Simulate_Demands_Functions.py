@@ -26,7 +26,7 @@ def BootstrapDemands():
 
         # Sort the list of demands and remove extreme values (min and max)
         store_demands.sort()
-        store_demands = store_demands[1:-1]
+        store_demands = store_demands[2:-2]
         nonzero_demands = [value for value in store_demands if value != 0]
 
         # Sample store demand from empirical distribution
@@ -39,6 +39,12 @@ def BootstrapDemands():
         if ("Countdown" in storename) and ("Metro" not in storename):
             Stores_data_zero.at[storeindex, 'Demand Estimate'] = sampled
 
+
+    # Remove the distribution centre
+    Stores_data = Stores_data[Stores_data['Store'] != 'Distribution Centre Auckland']
+    Stores_data_zero = Stores_data_zero[Stores_data_zero['Store'] != 'Distribution Centre Auckland']
+
+
     # Extract just the list of demands
     Stores_data = Stores_data['Demand Estimate'].values.tolist()
     Stores_data_zero = Stores_data_zero['Demand Estimate'].values.tolist()
@@ -49,3 +55,31 @@ def BootstrapDemands():
 
     # Return the arrays
     return Stores_data, Stores_data_zero
+
+
+def Obtain_Simulated_Route_Demands(weekday_routes_used, saturday_routes_used, weekday_stores_demands, saturday_stores_demands):
+
+    # Read in route matric
+    weekday_route_matrix = np.loadtxt(open("Route_Matrix_Weekday.csv"), delimiter=",", skiprows=0)
+    saturday_route_matrix = np.loadtxt(open("Route_Matrix_Weekend.csv"), delimiter=",", skiprows=0)
+    n_stores, n_routes = np.shape(weekday_route_matrix)
+
+    # Get number of routes used
+    weekday_n_routes = len(weekday_routes_used)
+    saturday_n_routes = len(saturday_routes_used)
+
+    # Initalise arrays of route times
+    weekday_route_demands = np.zeros(weekday_n_routes)
+    saturday_route_demands = np.zeros(saturday_n_routes)
+
+    # Loop through each route, for each demand case, and get the total demand
+    ### WEEKDAY ###
+    for i in range(weekday_n_routes):
+        weekday_route_demands[i] = np.dot(weekday_route_matrix[:, int(weekday_routes_used[i])], weekday_stores_demands)
+
+    ### WEEKEND ###
+    for i in range(saturday_n_routes):
+        saturday_route_demands[i] = np.dot(saturday_route_matrix[:, int(saturday_routes_used[i])], saturday_stores_demands)
+
+    # Return the route demands
+    return weekday_route_demands, saturday_route_demands

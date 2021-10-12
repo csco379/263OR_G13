@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from Simulate_Demands import *
+from Simulate_Demands_Functions import *
 from Simulate_Traffic import *
 
 ##############################################################################################
@@ -52,6 +52,7 @@ if __name__ == "__main__":
 
         # Simulate demands and route times
         weekday_stores_demands, saturday_stores_demands = BootstrapDemands()
+        weekday_route_demands, saturday_route_demands = Obtain_Simulated_Route_Demands(weekday_routes_used, saturday_routes_used, weekday_stores_demands, saturday_stores_demands)
         weekday_route_durations, saturday_route_durations = trafficSimulation("Route_Times_Weekday.csv", "Route_Times_Weekend.csv")
 
         # Get the times of the actual routes used
@@ -67,7 +68,7 @@ if __name__ == "__main__":
         # Loop through each route in the routing plan and add its costs, operations, etc
         for j in range(n_routes_weekday):
 
-            if weekday_stores_demands[j] <= 26:
+            if weekday_route_demands[j] <= 26:
                 if weekday_route_times[j] < Cost_Parameters['TruckShift']:
                     weekday_routing_cost += weekday_route_times[j] * Cost_Parameters['TruckHourlyCost']/(60**2)
                 else:
@@ -99,7 +100,7 @@ if __name__ == "__main__":
         # Loop through each route in the routing plan and add its costs, operations, etc
         for j in range(n_routes_saturday):
 
-            if saturday_stores_demands[j] <= 26:
+            if saturday_route_demands[j] <= 26:
                 if saturday_route_times[j] < Cost_Parameters['TruckShift']:
                     saturday_routing_cost += saturday_route_times[j] * Cost_Parameters['TruckHourlyCost']/(60**2)
                 else:

@@ -19,9 +19,9 @@ def trafficSimulation(weekdayFile, weekendFile):
     durationsarray_weekday = np.zeros(num_routes_weekday)
     durationsarray_weekend = np.zeros(num_routes_weekend)
 
-    # Simulating and storing durations while approximating the effect of traffic (-20% ~ +50% mins for weekdays, -10% ~ +20% mins for weekends)
+    # Simulating and storing durations while approximating the effect of traffic (-20% ~ +30% mins for weekdays, -10% ~ +20% mins for weekends)
     for i in range(num_routes_weekday):
-        durationsarray_weekday[i] += weekdayroute_file.iloc[i] * np.random.uniform(0.8, 1.5)
+        durationsarray_weekday[i] += weekdayroute_file.iloc[i] * np.random.uniform(0.8, 1.3)
 
     for j in range(num_routes_weekend):
         durationsarray_weekend[j] += weekendroute_file.iloc[j] * np.random.uniform(0.9, 1.2)

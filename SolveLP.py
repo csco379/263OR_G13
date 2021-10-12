@@ -95,7 +95,7 @@ def solveLP(Weekday):
 
     # Constraint on pallet demand for normal trucks
     for i in range(n_routes):
-        prob += vars[str(i)] * route_pallets_vector[i] <= Cost_Parameters["TruckPallets"]
+        prob += vars[str(i)] * route_pallets_vector[i] <= Cost_Parameters["TruckPallets"] - 2
 
     # Number of trucks constraints
     prob += lpSum(vars[str(i)] for i in range(n_routes)) == n_trucks
