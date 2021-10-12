@@ -5,6 +5,7 @@ from numpy.lib.nanfunctions import _nanprod_dispatcher
 import pandas as pd
 import folium
 import openrouteservice as ors
+
 #################################### Region and Store Type Visualisation ####################################
 ORSkey = "5b3ce3597851110001cf6248354cfef3acb24131a10df048bf5cddaf"
 
@@ -32,7 +33,7 @@ for i in range(0, len(coords)):
     elif "FreshChoice" in data.Store[i]:
         icon = "tag"
     elif "SuperValue" in data.Store[i]:
-        icon = "map-piin"
+        icon = "map-pin"
     elif "Distribution" in data.Store[i]:
         icon = "certificate"
 # Add a key for the different icons
@@ -42,57 +43,181 @@ m.save("RegionMap.html")
 '''
 ########################################### Route Visualisation #################################################################
 
-# Import list of routes with which stores are in it as a numpy array
-data_nonZero = pd.read_csv("Store_Data_Nonzero_GROUPED.csv").to_numpy()
-data_someZero = pd.read_csv("Store_Data_Some_zero_GROUPED.csv").to_numpy()
-
-allRoutes = pd.read_csv("Route_Matrix_Weekday.csv").to_numpy()
-routeNumbers = pd.read_csv("RouteNumbers.csv").to_numpy()
-routeStores = pd.read_csv("RouteStores.csv").to_numpy()
-
-route = np.zeroes((len(routeNumbers), 1))
-
-# Initialising an array to store the list of stores in the correct order for each route
-rearranged = [None]*len(routeStores)
-for i in range(0,len(allRoutes)):
-    index = allRoutes[routeNumbers[i]]
-    indexStores = routeStores[i]
-
-    # Adding the distribution centre as the first store visited
-    rearranged[i] = (data_nonZero[55, 3], data_nonZero[55, 2])
-
-    # Find the order of stores that are stored in index and rearrange them in rearranged
-    for j in range(0,len(index)):
-        for n in range(0,len(index)):
-            if(index[j]==indexStores[n]): # 0
-                # Appending the long then lat of the store 
-                rearranged[i].append((data_nonZero[indexStores[n], 3],data_nonZero[indexStores[n], 2])) 
-
-    # Appending the distribution centre as the last store visited. 
-    rearranged[i] = (data_nonZero[55, 3], data_nonZero[55, 2])
 
 
-# Plot each route on a map of Auckland
-#Weekday
 
-# Each row is a route 
-# If row is not empty (sum != 0) then nodes ordered 0 12 3 
-client = ors.Client(key=ORSkey)
-routeMapped = [None]*len(routeNumbers)
-# 
-for i in range (0,len(routeNumbers)):
-    for j in range (0,len(route[i])-1):
-        routeMapped.append( client.directions(coordinates = [rearranged[i,j],rearranged[i,j+1]], profile='driving-hgv', formate = 'geojson', validate = False))
+# Selecting which set of routes to visualise
+weekday = True
+
+if(weekday == True):
+    # Import dataframe with stores and associated coordinates
+    data_nonZero = pd.read_csv("Store_Data_Nonzero_GROUPED.csv").to_numpy()
+    
+    # Stores in all of the generated routes
+    allRoutes = pd.read_csv("Ordered_Route_Matrix.csv").to_numpy()
+    # Numbers of routes used
+    routeVectors = pd.read_csv("RouteVector.csv").to_numpy()
+
+    rearranged = [None]*len(routeVectors) # Storage for all routes in correct order
+
+    for i in range(0,len(routeVectors)):
+        index = allRoutes[:,int(routeVectors[i])] # Each route that is in the solution is accessed to identify which stores it contains ans in which order
+        indexStores = routeVectors[i,:]
+        temp = [] # Temporary storage for stores of each route
+        # Adding the distribution centre as the first store visited
+        temp.append((data_nonZero[55, 3], data_nonZero[55, 2]))
+
+        # Find the order of stores that are stored in index and rearrange them in rearranged
+        for j in range(1,len(index)):
+            for n in range(0,len(index)):
+                if(j==index[n]): # 
+                    # Appending the long then lat of the store 
+                    temp.append((data_nonZero[n, 3],data_nonZero[n, 2])) # columns are in wong order
+
+        # Appending the distribution centre as the last store visited. 
+        temp.append((data_nonZero[55, 3], data_nonZero[55, 2]))
+
+        rearranged[i] = temp
+
+    # Plot each route on a map of Auckland
+    # Map of Weekday Routes
+
+    # Accessing Openstreet maps
+    client = ors.Client(key=ORSkey)
+
+    routeMapped = []
 
 
-routeMap = folium.Map(location=list(reversed(coords[2])), zoom_start=10)
 
-for i in range(len(routeNumbers)):
-    folium.PolyLine(locations = [list(rearranged) for rearranged in routeMapped['features'][0]['geometry']['coordinates']]).add_to(routeMap)
+    for i in range(len(routeVectors)):
+        temp2 = rearranged[i]
+        for j in range (0,len(temp2)-1):
+            routeMapped.append( client.directions(coordinates = [rearranged[i][j],rearranged[i][j+1]], profile='driving-hgv', format = 'geojson', validate = False))
 
-routeMap.save("WeekdayRoutesMap.html")
 
-#Weekend
+    routeMap = folium.Map(location= [-36.95770671222872,174.814071322196], zoom_start=10)
+
+    # Creating a single list of coordinates
+    rearrangedFull = []
+    rearrangedFull.append(routes for routes in rearranged)
+
+    for i in range(len(routeMapped)): # Whatever it currently is
+    
+        currentCoordPair = routeMapped[i]
+    
+        folium.PolyLine(locations = [ list(reversed(rearrangedFull)) for rearrangedFull in currentCoordPair['features'][0]['geometry']['coordinates']]).add_to(routeMap)
+    
+    # Adding stores
+    for i in range(0, len(coords)):
+        if data.Region[i]== "North":
+            iconCol = "green"
+        elif data.Region[i]== "South":
+            iconCol = "cadetblue"
+        elif data.Region[i]== "East":
+            iconCol = "lightred"
+        elif data.Region[i]== "West":
+            iconCol = "darkblue"
+        elif data.Region[i]== "Central":
+            iconCol = "purple"
+
+        if  "Countdown" in data.Store[i]:
+            icon = "cloud"
+        elif "FreshChoice" in data.Store[i]:
+            icon = "tag"
+        elif "SuperValue" in data.Store[i]:
+            icon = "map-pin"
+        elif "Distribution" in data.Store[i]:
+            icon = "certificate"
+
+        folium.Marker(list(reversed(coords[i])), popup =data.Store[i], icon = folium.Icon(color = iconCol, icon=icon)).add_to(routeMap)
+
+
+    routeMap.save("WeekdayRoutesMap.html")
+
+# Weekend
+
+if(weekday == False):
+    # Import dataframe with stores and associated coordinates for the weekend
+    data_someZero = pd.read_csv("Store_Data_Some_zero_GROUPED.csv").to_numpy()
+    
+    # Stores in all of the generated routes (same as weekday, only the associated demand array was changed)
+    allRoutes = pd.read_csv("Ordered_Route_Matrix.csv").to_numpy()
+    
+    # Numbers of routes used in the weekend solution
+    routeVectors = pd.read_csv("RouteVector_weekend.csv").to_numpy()
+
+    rearranged = [None]*len(routeVectors) # Storage for all routes in correct order
+
+    for i in range(0,len(routeVectors)):
+        index = allRoutes[:,int(routeVectors[i])] # Each route that is in the solution is accessed to identify which stores it contains ans in which order
+        indexStores = routeVectors[i,:]
+        temp = [] # Temporary storage for stores of each route
+        # Adding the distribution centre as the first store visited
+        temp.append((data_someZero[55, 3], data_someZero[55, 2]))
+
+        # Find the order of stores that are stored in index and rearrange them in rearranged
+        for j in range(1,len(index)):
+            for n in range(0,len(index)):
+                if(j==index[n]): # 
+                    # Appending the long then lat of the store 
+                    temp.append((data_someZero[n, 3],data_someZero[n, 2])) # columns are in wong order
+
+        # Appending the distribution centre as the last store visited. 
+        temp.append((data_someZero[55, 3], data_someZero[55, 2]))
+
+        rearranged[i] = temp
+
+    # Plot each route on a map of Auckland
+
+    # Accessing Openstreet maps
+    client = ors.Client(key=ORSkey)
+
+    # Getting directions from client
+    routeMapped = []
+    for i in range(len(routeVectors)):
+        temp2 = rearranged[i]
+        for j in range (0,len(temp2)-1):
+            routeMapped.append( client.directions(coordinates = [rearranged[i][j],rearranged[i][j+1]], profile='driving-hgv', format = 'geojson', validate = False))
+
+
+    routeMap = folium.Map(location= [-36.95770671222872,174.814071322196], zoom_start=10)
+
+    # Creating a single list of coordinates
+    rearrangedFull = []
+    rearrangedFull.append(routes for routes in rearranged)
+
+    # Creating lines for each route and adding to map
+    for i in range(len(routeMapped)): # Whatever it currently is
+    
+        currentCoordPair = routeMapped[i]
+    
+        folium.PolyLine(locations = [ list(reversed(rearrangedFull)) for rearrangedFull in currentCoordPair['features'][0]['geometry']['coordinates']]).add_to(routeMap)
+    
+    # Adding stores
+    for i in range(0, len(coords)):
+        if data.Region[i]== "North":
+            iconCol = "green"
+        elif data.Region[i]== "South":
+            iconCol = "cadetblue"
+        elif data.Region[i]== "East":
+            iconCol = "lightred"
+        elif data.Region[i]== "West":
+            iconCol = "darkblue"
+        elif data.Region[i]== "Central":
+            iconCol = "purple"
+
+        if  "Countdown" in data.Store[i]:
+            icon = "cloud"
+        elif "FreshChoice" in data.Store[i]:
+            icon = "tag"
+        elif "SuperValue" in data.Store[i]:
+            icon = "map-pin"
+        elif "Distribution" in data.Store[i]:
+            icon = "certificate"
+
+        folium.Marker(list(reversed(coords[i])), popup =data.Store[i], icon = folium.Icon(color = iconCol, icon=icon )).add_to(routeMap)
+
+    routeMap.save("WeekendRoutesMap.html")
 
 
 
