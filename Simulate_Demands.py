@@ -40,7 +40,8 @@ def BootstrapDemands():
             Stores_data_zero.at[storeindex, 'Demand Estimate'] = sampled
 
     # Extract just the list of demands
-
+    Stores_data = Stores_data['Demand Estimate'].values.tolist()
+    Stores_data_zero = Stores_data_zero['Demand Estimate'].values.tolist()
 
     # Export to file
     #Stores_data.to_csv("Simulated_Demands_Nonzero.csv", index = False)

@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from Simulate_Demands import *
 from Simulate_Traffic import *
 
@@ -50,25 +51,85 @@ if __name__ == "__main__":
     for i in range(n):
 
         # Simulate demands and route times
-        Stores_data, _ = BootstrapDemands()
+        weekday_stores_demands, saturday_stores_demands = BootstrapDemands()
         weekday_route_durations, saturday_route_durations = trafficSimulation("Route_Times_Weekday.csv", "Route_Times_Weekend.csv")
 
         # Get the times of the actual routes used
-        weekday_route_times = [weekday_route_durations[i] for i in weekday_routes_used]
-        saturday_route_times = [saturday_route_durations[i] for i in saturday_routes_used]
+        weekday_route_times = [weekday_route_durations[int(i)] for i in weekday_routes_used]
+        saturday_route_times = [saturday_route_durations[int(i)] for i in saturday_routes_used]
+
+        # Get the actual total pallet demand on each route used
+
 
         ### WEEKDAY ###
         # Initialise costs for this simulate day
         weekday_routing_cost = 0
         weekday_routing_trucks = 0
-        weekday_routing_rentals = 0
+        weekday_routing_rental_time = 0
         # Loop through each route in the routing plan and add its costs, operations, etc
-        for i in range(n_routes_weekday):
-            if weekday_route_times[i] < Cost_Parameters['TruckShift']:
-                weekday_routing_cost += weekday_route_times[i] * Cost_Parameters['TruckHourlyCost']/(60**2)
+        for j in range(n_routes_weekday):
+
+            if weekday_stores_demands[j] <= 26:
+                if weekday_route_times[j] < Cost_Parameters['TruckShift']:
+                    weekday_routing_cost += weekday_route_times[j] * Cost_Parameters['TruckHourlyCost']/(60**2)
+                else:
+                    weekday_routing_cost += (Cost_Parameters['TruckShift'])*(Cost_Parameters['TruckHourlyCost']/(60**2)) + (weekday_route_times[j] - Cost_Parameters['TruckShift']) * (Cost_Parameters['ExtraTruckTime']/(60**2))
+
+                weekday_routing_trucks += 1
+
             else:
-                route_costs[i] = (Cost_Parameters['TruckShift'])*(Cost_Parameters['TruckHourlyCost']/(60**2)) + (route_time_vector[i] - Cost_Parameters['TruckShift']) * (Cost_Parameters['ExtraTruckTime']/(60**2))
+                weekday_routing_rental_time += weekday_stores_demands[j]
+
+        N_4h_leased = np.ceil(weekday_routing_rental_time/(4*60**2))
+        weekday_routing_cost += N_4h_leased * Cost_Parameters['WetLeasedCost']
+
+        # Store weekday cost
+        weekday_costs[i] = weekday_routing_cost
+
+        # Store number of trucks used
+        weekday_trucks[i] = weekday_routing_trucks
+
+        # Store number of wet-leased 4h periods bought
+        weekday_rental[i] = N_4h_leased
 
 
 
+        ### WEEKEND ###
+        # Initialise costs for this simulate day
+        saturday_routing_cost = 0
+        saturday_routing_trucks = 0
+        saturday_routing_rental_time = 0
+        # Loop through each route in the routing plan and add its costs, operations, etc
+        for j in range(n_routes_saturday):
 
+            if saturday_stores_demands[j] <= 26:
+                if saturday_route_times[j] < Cost_Parameters['TruckShift']:
+                    saturday_routing_cost += saturday_route_times[j] * Cost_Parameters['TruckHourlyCost']/(60**2)
+                else:
+                    saturday_routing_cost += (Cost_Parameters['TruckShift'])*(Cost_Parameters['TruckHourlyCost']/(60**2)) + (saturday_route_times[j] - Cost_Parameters['TruckShift']) * (Cost_Parameters['ExtraTruckTime']/(60**2))
+
+                saturday_routing_trucks += 1
+
+            else:
+                saturday_routing_rental_time += saturday_stores_demands[j]
+
+        N_4h_leased = np.ceil(saturday_routing_rental_time/(4*60**2))
+        saturday_routing_cost += N_4h_leased * Cost_Parameters['WetLeasedCost']
+
+        # Store weekday cost
+        saturday_costs[i] = saturday_routing_cost
+
+        # Store number of trucks used
+        saturday_trucks[i] = saturday_routing_trucks
+
+        # Store number of wet-leased 4h periods bought
+        saturday_rental[i] = N_4h_leased
+
+
+
+    # Print/display the results
+    plt.figure(1)
+    plt.hist(weekday_costs, density=True, histtype='stepfilled', alpha=0.2)
+    plt.figure(2)
+    plt.hist(saturday_costs, density=True, histtype='stepfilled', alpha=0.2)
+    plt.show()
