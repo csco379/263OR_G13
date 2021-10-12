@@ -6,38 +6,45 @@ import random
 ###             This script simulates the store demands via bootstrapping           ###
 #######################################################################################
 
-# Read in data files
-Demand_file = pd.read_csv("WoolworthsDemands.csv")
-Stores_data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
-Stores_data_zero = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
+def BootstrapDemands():
 
-# Get number of stores and days
-n_stores, n_days = np.shape(Demand_file)
+    # Read in data files
+    Demand_file = pd.read_csv("WoolworthsDemands.csv")
+    Stores_data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
+    Stores_data_zero = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
 
-# Loop through stores and bootstrap demand for each
-for i in range(n_stores):
+    # Get number of stores and days
+    n_stores, n_days = np.shape(Demand_file)
 
-    # Get store data
-    storename = Demand_file['Store'].iloc[i]
-    store_data = Demand_file.loc[Demand_file['Store'] == storename]
-    store_demands = store_data.iloc[0, 1:].values.tolist()
+    # Loop through stores and bootstrap demand for each
+    for i in range(n_stores):
 
-    # Sort the list of demands and remove extreme values (min and max)
-    store_demands.sort()
-    store_demands = store_demands[1:-1]
-    nonzero_demands = [value for value in store_demands if value != 0]
+        # Get store data
+        storename = Demand_file['Store'].iloc[i]
+        store_data = Demand_file.loc[Demand_file['Store'] == storename]
+        store_demands = store_data.iloc[0, 1:].values.tolist()
 
-    # Sample store demand from empirical distribution
-    sampled = random.choice(nonzero_demands)
+        # Sort the list of demands and remove extreme values (min and max)
+        store_demands.sort()
+        store_demands = store_demands[1:-1]
+        nonzero_demands = [value for value in store_demands if value != 0]
 
-    # Store in the data frame
-    storeindex = Stores_data.index[Stores_data.Store == storename]
-    Stores_data.at[storeindex, 'Demand Estimate'] = sampled
+        # Sample store demand from empirical distribution
+        sampled = random.choice(nonzero_demands)
 
-    if ("Countdown" in storename) and ("Metro" not in storename):
-        Stores_data_zero.at[storeindex, 'Demand Estimate'] = sampled
+        # Store in the data frame
+        storeindex = Stores_data.index[Stores_data.Store == storename]
+        Stores_data.at[storeindex, 'Demand Estimate'] = sampled
 
-# Export to file
-Stores_data.to_csv("Simulated_Demands_Nonzero.csv", index = False)
-Stores_data_zero.to_csv("Simulated_Demands_Some_zero.csv", index = False)
+        if ("Countdown" in storename) and ("Metro" not in storename):
+            Stores_data_zero.at[storeindex, 'Demand Estimate'] = sampled
 
+    # Extract just the list of demands
+
+
+    # Export to file
+    #Stores_data.to_csv("Simulated_Demands_Nonzero.csv", index = False)
+    # Stores_data_zero.to_csv("Simulated_Demands_Some_zero.csv", index = False)
+
+    # Return the arrays
+    return Stores_data, Stores_data_zero

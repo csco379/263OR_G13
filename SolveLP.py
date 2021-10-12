@@ -150,9 +150,13 @@ def solveLP(Weekday):
                 routeNumbers.append(route_number)
                 routeStores.append(route_info)
                 
+    if Weekday == True:
+        np.savetxt( "RouteVector_Weekday.csv", routeNumbers, delimiter=',')
+        np.savetxt( "RouteStores_Weekday.csv", routeStores, delimiter=',')
+    else:
+        np.savetxt( "RouteVector_Weekend.csv", routeNumbers, delimiter=',')
+        np.savetxt( "RouteStores_Weekend.csv", routeStores, delimiter=',')
 
-    np.savetxt( "RouteVector.csv", routeNumbers, delimiter=',')
-    np.savetxt( "RouteStores.csv", routeStores, delimiter=',')
     allvisited = "False"
     if (Weekday == True and count == 65) or (Weekday == False and count == 53):
         allvisited = "True"
@@ -166,4 +170,4 @@ def solveLP(Weekday):
 if __name__ == "__main__":
 
     solveLP(Weekday=True)
-    #solveLP(Weekday=False)
+    solveLP(Weekday=False)

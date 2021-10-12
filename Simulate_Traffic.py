@@ -5,9 +5,9 @@ import statistics
 import csv
 
 # This function simulates the weekday and weekend traffic for route times
-def trafficSimulation(weekdayFile, weekendFile)
+def trafficSimulation(weekdayFile, weekendFile):
 
-# Reading the csv files
+    # Reading the csv files
     weekdayroute_file = pd.read_csv(weekdayFile)
     weekendroute_file = pd.read_csv(weekendFile)
 
