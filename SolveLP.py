@@ -125,9 +125,8 @@ def solveLP(Weekday):
     # Print all routes used
     count = 0
     counter = 0
-    routeNumbers = list()
-    #routeStores = [None]*int(num_routes_used.varValue)
-    routeStores = [0]*33
+    routeNumbers = np.empty((0,1), int)
+    routeStores = np.empty((0, n_stores), int)
     print()
     print("\nList of routes used in optimal solution:")
     for v in prob.variables():
@@ -149,22 +148,22 @@ def solveLP(Weekday):
                     count += 1
 
                 print(v.name + ", DELIVERING TO:   " + names)
+
                 # Recording the routes used in solution so that it can be plotted
-                routeNumbers.append(route_number)
-                routeStores[counter] = list(route_info)
+                routeNumbers = np.append(routeNumbers, route_number)
+                routeStores = np.vstack([routeStores, np.array(route_info)])
+
                 counter += 1
-                
-<<<<<<< HEAD
+            
+
     # Saving the route indices for use in visualising
-    np.savetxt( "RouteVector_weekend.csv", routeNumbers, delimiter=',')
-=======
     if Weekday == True:
-        np.savetxt( "RouteVector_Weekday.csv", routeNumbers, delimiter=',')
-        np.savetxt( "RouteStores_Weekday.csv", routeStores, delimiter=',')
+        np.savetxt("RouteVector_Weekday.csv", routeNumbers, delimiter=',')
+        np.savetxt("RouteStores_Weekday.csv", routeStores, delimiter=',')
     else:
-        np.savetxt( "RouteVector_Weekend.csv", routeNumbers, delimiter=',')
-        np.savetxt( "RouteStores_Weekend.csv", routeStores, delimiter=',')
->>>>>>> cd0f51f49b54caa77e527aba47ec28ccb747d128
+        np.savetxt("RouteVector_Weekend.csv", routeNumbers, delimiter=',')
+        np.savetxt("RouteStores_Weekend.csv", routeStores, delimiter=',')
+
 
     allvisited = "False"
     if (Weekday == True and count == 65) or (Weekday == False and count == 53):
@@ -178,9 +177,5 @@ def solveLP(Weekday):
 
 if __name__ == "__main__":
 
-<<<<<<< HEAD
-    #solveLP(Weekday=True)
-=======
     solveLP(Weekday=True)
->>>>>>> cd0f51f49b54caa77e527aba47ec28ccb747d128
     solveLP(Weekday=False)
