@@ -66,7 +66,7 @@ demands2 = np.zeros(n_stores + 1)
 
 # Process the demands and obtain a conservative estimate for each. These will be used to generate routes
 # Use the Xth percentile value as the demand for each store
-X = 75
+X = 60
 
 Data_table1['Demand Estimate'] = np.zeros(n_stores + 1)
 Data_table2['Demand Estimate'] = np.zeros(n_stores + 1)

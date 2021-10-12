@@ -15,7 +15,7 @@ if __name__ == "__main__":
     np.random.seed(44)
 
     # Set number of trials
-    n = 100
+    n = 10
 
     # Store cost parameter data
     Cost_Parameters = {'NumTrucks' : 30, 
@@ -58,8 +58,6 @@ if __name__ == "__main__":
         weekday_route_times = [weekday_route_durations[int(i)] for i in weekday_routes_used]
         saturday_route_times = [saturday_route_durations[int(i)] for i in saturday_routes_used]
 
-        # Get the actual total pallet demand on each route used
-
 
         ### WEEKDAY ###
         # Initialise costs for this simulate day
@@ -78,7 +76,7 @@ if __name__ == "__main__":
                 weekday_routing_trucks += 1
 
             else:
-                weekday_routing_rental_time += weekday_stores_demands[j]
+                weekday_routing_rental_time += weekday_route_times[j]
 
         N_4h_leased = np.ceil(weekday_routing_rental_time/(4*60**2))
         weekday_routing_cost += N_4h_leased * Cost_Parameters['WetLeasedCost']
@@ -91,7 +89,6 @@ if __name__ == "__main__":
 
         # Store number of wet-leased 4h periods bought
         weekday_rental[i] = N_4h_leased
-
 
 
         ### WEEKEND ###
@@ -111,7 +108,7 @@ if __name__ == "__main__":
                 saturday_routing_trucks += 1
 
             else:
-                saturday_routing_rental_time += saturday_stores_demands[j]
+                saturday_routing_rental_time += saturday_route_times[j]
 
         N_4h_leased = np.ceil(saturday_routing_rental_time/(4*60**2))
         saturday_routing_cost += N_4h_leased * Cost_Parameters['WetLeasedCost']
@@ -127,9 +124,21 @@ if __name__ == "__main__":
 
 
 
-    # Print/display the results
+    ###   Print/display the results   ###
+
     plt.figure(1)
     plt.hist(weekday_costs, density=True, histtype='stepfilled', alpha=0.2)
+
     plt.figure(2)
     plt.hist(saturday_costs, density=True, histtype='stepfilled', alpha=0.2)
+
+    plt.figure(3)
+    plt.hist(weekday_trucks, density=True, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.hist(saturday_trucks, density=True, histtype='stepfilled', alpha=0.2, bins=10)
+
+    plt.figure(4)
+    plt.hist(weekday_rental, density=True, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.hist(saturday_rental, density=True, histtype='stepfilled', alpha=0.2, bins=10)
+
+
     plt.show()
