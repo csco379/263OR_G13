@@ -5,6 +5,7 @@ import pandas as pd
 import itertools
 from Regions import set_boundaries
 from pulp import *
+import csv
 
 # Read in the route matrix, route times and route pallet demands
 #route_matrix = np.loadtxt(open("Binary_Route_Matrix.csv"), delimiter=",", skiprows=0)
@@ -123,9 +124,11 @@ def solveLP(Weekday):
 
     # Print all routes used
     count = 0
+    counter = 0
     routeNumbers = list()
-    routeStores = list()
-
+    #routeStores = [None]*int(num_routes_used.varValue)
+    routeStores = [0]*33
+    print()
     print("\nList of routes used in optimal solution:")
     for v in prob.variables():
         if type(v.varValue) != None and "Route" in v.name:
@@ -148,14 +151,20 @@ def solveLP(Weekday):
                 print(v.name + ", DELIVERING TO:   " + names)
                 # Recording the routes used in solution so that it can be plotted
                 routeNumbers.append(route_number)
-                routeStores.append(route_info)
+                routeStores[counter] = list(route_info)
+                counter += 1
                 
+<<<<<<< HEAD
+    # Saving the route indices for use in visualising
+    np.savetxt( "RouteVector_weekend.csv", routeNumbers, delimiter=',')
+=======
     if Weekday == True:
         np.savetxt( "RouteVector_Weekday.csv", routeNumbers, delimiter=',')
         np.savetxt( "RouteStores_Weekday.csv", routeStores, delimiter=',')
     else:
         np.savetxt( "RouteVector_Weekend.csv", routeNumbers, delimiter=',')
         np.savetxt( "RouteStores_Weekend.csv", routeStores, delimiter=',')
+>>>>>>> cd0f51f49b54caa77e527aba47ec28ccb747d128
 
     allvisited = "False"
     if (Weekday == True and count == 65) or (Weekday == False and count == 53):
@@ -169,5 +178,9 @@ def solveLP(Weekday):
 
 if __name__ == "__main__":
 
+<<<<<<< HEAD
+    #solveLP(Weekday=True)
+=======
     solveLP(Weekday=True)
+>>>>>>> cd0f51f49b54caa77e527aba47ec28ccb747d128
     solveLP(Weekday=False)
