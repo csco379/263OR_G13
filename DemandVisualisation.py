@@ -13,7 +13,7 @@ data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
 
 coords = data[['Long', 'Lat']]
 coords = coords.to_numpy().tolist()
-'''
+"""
 m = folium.Map(location = list(reversed(coords[2])), zoom_start=10)
 
 for i in range(0, len(coords)):
@@ -38,16 +38,16 @@ for i in range(0, len(coords)):
         icon = "certificate"
 # Add a key for the different icons
 
-    folium.Marker(list(reversed(coords[i])), popup =data.Store[i], icon = folium.Icon(color = iconCol, icon=icon)).add_to(m)
+    folium.Marker(list(reversed(coords[i])), popup =data.Store[i], icon = folium.features.CustomIcon(color = iconCol, icon=icon, icon_size=(5, 5))).add_to(m)
 m.save("RegionMap.html")
-'''
+
 ########################################### Route Visualisation #################################################################
 
 
-
+"""
 
 # Selecting which set of routes to visualise
-weekday = True
+weekday = False
 
 if(weekday == True):
     # Import dataframe with stores and associated coordinates
@@ -56,7 +56,7 @@ if(weekday == True):
     # Stores in all of the generated routes
     allRoutes = pd.read_csv("Ordered_Route_Matrix.csv").to_numpy()
     # Numbers of routes used
-    routeVectors = pd.read_csv("RouteVector.csv").to_numpy()
+    routeVectors = pd.read_csv("RouteVector_Weekday.csv").to_numpy()
 
     rearranged = [None]*len(routeVectors) # Storage for all routes in correct order
 
@@ -223,8 +223,8 @@ if(weekday == False):
 
 ########################################### Demand Visualisation ############################################
 
-'''
 
+"""
 import seaborn as sns
 import matplotlib.pyplot as plt ###???
 
@@ -304,4 +304,4 @@ plt.show()
 
 
 plt.show()
-'''
+"""
