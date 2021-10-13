@@ -161,10 +161,10 @@ def solveLP(Weekday):
     # Saving the route indices for use in visualising
     if Weekday == True:
         np.savetxt("RouteVector_Weekday.csv", routeNumbers, delimiter=',')
-        np.savetxt("RouteStores_Weekday.csv", routeStores, delimiter=',')
+ 
     else:
         np.savetxt("RouteVector_Weekend.csv", routeNumbers, delimiter=',')
-        np.savetxt("RouteStores_Weekend.csv", routeStores, delimiter=',')
+
 
 
     allvisited = "False"
