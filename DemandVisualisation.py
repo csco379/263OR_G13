@@ -72,7 +72,6 @@ if(weekday == True):
             for n in range(0,len(index)):
                 if(j==index[n]): # 
 
-
                     # Appending the long then lat of the store 
                     if n<55:
                         temp.append((data_nonZero[n, 3],data_nonZero[n, 2])) # columns are in wong order
@@ -168,8 +167,13 @@ if(weekday == False):
         for j in range(1,len(index)):
             for n in range(0,len(index)):
                 if(j==index[n]): # 
+                    
                     # Appending the long then lat of the store 
-                    temp.append((data_someZero[n, 3],data_someZero[n, 2])) # columns are in wong order
+                    if n<55:
+                        temp.append((data_nonZero[n, 3],data_nonZero[n, 2])) # columns are in wong order
+                    else:
+                        temp.append((data_nonZero[n+1, 3],data_nonZero[n+1, 2]))
+
 
         # Appending the distribution centre as the last store visited. 
         temp.append((data_someZero[55, 3], data_someZero[55, 2]))
