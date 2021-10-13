@@ -47,7 +47,7 @@ m.save("RegionMap.html")
 """
 
 # Selecting which set of routes to visualise
-weekday = True
+weekday = False
 
 if(weekday == True):
     # Import dataframe with stores and associated coordinates
@@ -100,7 +100,7 @@ if(weekday == True):
     for i in range(len(routeVectors)):
         temp2 = rearranged[i]
         for j in range (0,len(temp2)-1):
-            route = client.directions(coordinates = [temp2[j],temp2[j+1]], profile='driving-hgv', format = 'geojson', validate = False)
+            routeMapped.append( client.directions(coordinates = [rearranged[i][j],rearranged[i][j+1]], profile='driving-hgv', format = 'geojson', validate = False))
 
 
     routeMap = folium.Map(location= [-36.95770671222872,174.814071322196], zoom_start=10)
