@@ -3,7 +3,6 @@ from numpy.core.einsumfunc import _einsum_path_dispatcher
 from numpy.lib.nanfunctions import _nanprod_dispatcher
 import pandas as pd
 import itertools
-from Regions import set_boundaries
 from pulp import *
 import csv
 
