@@ -124,22 +124,46 @@ if __name__ == "__main__":
         saturday_rental[i] = N_4h_leased
 
 
+    # Sort the results
+    weekday_costs.sort()        
+    saturday_costs.sort()
+    weekday_trucks.sort()      
+    saturday_trucks.sort()
+    weekday_rental.sort()     
+    saturday_rental.sort()
+
 
     ###   Print/display the results   ###
 
+    # Generate and format the plots
     plt.figure(1)
-    plt.hist(weekday_costs, density=True, histtype='stepfilled', alpha=0.2)
+    plt.hist(weekday_costs, density=False, histtype='stepfilled', alpha=0.2)
+    plt.title("Histogram of Simulated Routing Cost [1 Weekday]")
+    plt.xlabel("Daily Cost [$]")
+    plt.ylabel("Simulated Frequency")
 
     plt.figure(2)
-    plt.hist(saturday_costs, density=True, histtype='stepfilled', alpha=0.2)
+    plt.hist(saturday_costs, density=False, histtype='stepfilled', alpha=0.2)
+    plt.title("Histogram of Simulated Routing Cost [1 Saturday]")
+    plt.xlabel("Daily Cost [$]")
+    plt.ylabel("Simulated Frequency")
 
     plt.figure(3)
-    plt.hist(weekday_trucks, density=True, histtype='stepfilled', alpha=0.2, bins=10)
-    plt.hist(saturday_trucks, density=True, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.hist(weekday_trucks, density=False, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.hist(saturday_trucks, density=False, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.title("Histogram of Simulated Truck Requirements")
+    plt.xlabel("Number of Trucks")
+    plt.ylabel("Simulated Frequency")
+    plt.legend(['Weekday', 'Saturday'])
+
 
     plt.figure(4)
-    plt.hist(weekday_rental, density=True, histtype='stepfilled', alpha=0.2, bins=10)
-    plt.hist(saturday_rental, density=True, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.hist(weekday_rental, density=False, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.hist(saturday_rental, density=False, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.title("Histogram of Simulated Rental Trucks Used")
+    plt.xlabel("Number of Rental Trucks")
+    plt.ylabel("Simulated Frequency")
+    plt.legend(['Weekday', 'Saturday'])
 
-
+    # Show plots
     plt.show()

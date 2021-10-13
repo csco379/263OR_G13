@@ -8,8 +8,8 @@ import csv
 def trafficSimulation(weekdayFile, weekendFile):
 
     # Reading the csv files
-    weekdayroute_file = pd.read_csv(weekdayFile)
-    weekendroute_file = pd.read_csv(weekendFile)
+    weekdayroute_file = np.loadtxt(open(weekdayFile), delimiter=',', skiprows=0)
+    weekendroute_file = np.loadtxt(open(weekendFile),  delimiter=',', skiprows=0)
 
     # Finding the number of durations for each file
     num_routes_weekday = len(weekdayroute_file)
@@ -21,9 +21,9 @@ def trafficSimulation(weekdayFile, weekendFile):
 
     # Simulating and storing durations while approximating the effect of traffic (-20% ~ +30% mins for weekdays, -10% ~ +20% mins for weekends)
     for i in range(num_routes_weekday):
-        durationsarray_weekday[i] += weekdayroute_file.iloc[i] * np.random.uniform(0.8, 1.3)
+        durationsarray_weekday[i] += weekdayroute_file[i] * np.random.uniform(0.8, 1.3)
 
     for j in range(num_routes_weekend):
-        durationsarray_weekend[j] += weekendroute_file.iloc[j] * np.random.uniform(0.9, 1.2)
+        durationsarray_weekend[j] += weekendroute_file[j] * np.random.uniform(0.9, 1.2)
 
     return durationsarray_weekday, durationsarray_weekend

@@ -25,9 +25,9 @@ def BootstrapDemands():
         store_demands = store_data.iloc[0, 1:].values.tolist()
 
         # Sort the list of demands and remove extreme values (min and max)
-        store_demands.sort()
-        store_demands = store_demands[2:-2]
         nonzero_demands = [value for value in store_demands if value != 0]
+        nonzero_demands.sort()
+        nonzero_demands = nonzero_demands[2:-3]
 
         # Sample store demand from empirical distribution
         sampled = random.choice(nonzero_demands)
@@ -59,7 +59,7 @@ def BootstrapDemands():
 
 def Obtain_Simulated_Route_Demands(weekday_routes_used, saturday_routes_used, weekday_stores_demands, saturday_stores_demands):
 
-    # Read in route matric
+    # Read in route matrix
     weekday_route_matrix = np.loadtxt(open("Route_Matrix_Weekday.csv"), delimiter=",", skiprows=0)
     saturday_route_matrix = np.loadtxt(open("Route_Matrix_Weekend.csv"), delimiter=",", skiprows=0)
     n_stores, n_routes = np.shape(weekday_route_matrix)
