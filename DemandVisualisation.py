@@ -47,14 +47,14 @@ m.save("RegionMap.html")
 """
 
 # Selecting which set of routes to visualise
-weekday = False
+weekday = True
 
 if(weekday == True):
     # Import dataframe with stores and associated coordinates
     data_nonZero = pd.read_csv("Store_Data_Nonzero_GROUPED.csv").to_numpy()
     
     # Stores in all of the generated routes
-    allRoutes = pd.read_csv("Ordered_Route_Matrix.csv").to_numpy()
+    allRoutes = np.loadtxt(open("Ordered_Route_Matrix.csv"),  delimiter=",", skiprows=0)
     # Numbers of routes used
     routeVectors = np.loadtxt(open("RouteVector_Weekday.csv"),  delimiter=",", skiprows=0)
 
@@ -62,7 +62,7 @@ if(weekday == True):
 
     for i in range(0,len(routeVectors)):
         index = allRoutes[:,int(routeVectors[i])] # Each route that is in the solution is accessed to identify which stores it contains ans in which order
-        indexStores = routeVectors[i,:]
+        indexStores = routeVectors[i]
         temp = [] # Temporary storage for stores of each route
         # Adding the distribution centre as the first store visited
         temp.append((data_nonZero[55, 3], data_nonZero[55, 2]))
