@@ -13,7 +13,7 @@ data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
 
 coords = data[['Long', 'Lat']]
 coords = coords.to_numpy().tolist()
-"""
+'''
 m = folium.Map(location = list(reversed(coords[2])), zoom_start=10)
 
 for i in range(0, len(coords)):
@@ -38,13 +38,13 @@ for i in range(0, len(coords)):
         icon = "certificate"
 # Add a key for the different icons
 
-    folium.Marker(list(reversed(coords[i])), popup =data.Store[i], icon = folium.features.CustomIcon(color = iconCol, icon=icon, icon_size=(5, 5))).add_to(m)
+    folium.Marker(list(reversed(coords[i])), popup =data.Store[i], icon = folium.Icon(color = iconCol, icon=icon)).add_to(m)
 m.save("RegionMap.html")
-
+'''
 ########################################### Route Visualisation #################################################################
 
 
-"""
+
 
 # Selecting which set of routes to visualise
 weekday = True
@@ -54,33 +54,25 @@ if(weekday == True):
     data_nonZero = pd.read_csv("Store_Data_Nonzero_GROUPED.csv").to_numpy()
     
     # Stores in all of the generated routes
-    allRoutes = np.loadtxt(open("Ordered_Route_Matrix.csv"),  delimiter=",", skiprows=0)
+    allRoutes = pd.read_csv("Ordered_Route_Matrix.csv").to_numpy()
     # Numbers of routes used
-    routeVectors = np.loadtxt(open("RouteVector_Weekday.csv"),  delimiter=",", skiprows=0)
+    routeVectors = pd.read_csv("RouteVector.csv").to_numpy()
 
     rearranged = [None]*len(routeVectors) # Storage for all routes in correct order
 
     for i in range(0,len(routeVectors)):
         index = allRoutes[:,int(routeVectors[i])] # Each route that is in the solution is accessed to identify which stores it contains ans in which order
-        indexStores = routeVectors[i]
+        indexStores = routeVectors[i,:]
         temp = [] # Temporary storage for stores of each route
         # Adding the distribution centre as the first store visited
         temp.append((data_nonZero[55, 3], data_nonZero[55, 2]))
 
         # Find the order of stores that are stored in index and rearrange them in rearranged
-        for j in range(1,len(index)+1):
+        for j in range(1,len(index)):
             for n in range(0,len(index)):
                 if(j==index[n]): # 
-
                     # Appending the long then lat of the store 
-                    if n<55:
-                        temp.append((data_nonZero[n, 3],data_nonZero[n, 2])) # columns are in wong order
-                    else:
-                        temp.append((data_nonZero[n+1, 3],data_nonZero[n+1, 2]))
-
-
-               
-
+                    temp.append((data_nonZero[n, 3],data_nonZero[n, 2])) # columns are in wong order
 
         # Appending the distribution centre as the last store visited. 
         temp.append((data_nonZero[55, 3], data_nonZero[55, 2]))
@@ -100,7 +92,7 @@ if(weekday == True):
     for i in range(len(routeVectors)):
         temp2 = rearranged[i]
         for j in range (0,len(temp2)-1):
-            route = client.directions(coordinates = [temp2[j],temp2[j+1]], profile='driving-hgv', format = 'geojson', validate = False)
+            routeMapped.append( client.directions(coordinates = [rearranged[i][j],rearranged[i][j+1]], profile='driving-hgv', format = 'geojson', validate = False))
 
 
     routeMap = folium.Map(location= [-36.95770671222872,174.814071322196], zoom_start=10)
@@ -152,7 +144,7 @@ if(weekday == False):
     allRoutes = pd.read_csv("Ordered_Route_Matrix.csv").to_numpy()
     
     # Numbers of routes used in the weekend solution
-    routeVectors = pd.read_csv("RouteVector_Weekend.csv").to_numpy()
+    routeVectors = pd.read_csv("RouteVector_weekend.csv").to_numpy()
 
     rearranged = [None]*len(routeVectors) # Storage for all routes in correct order
 
@@ -167,13 +159,8 @@ if(weekday == False):
         for j in range(1,len(index)):
             for n in range(0,len(index)):
                 if(j==index[n]): # 
-                    
                     # Appending the long then lat of the store 
-                    if n<55:
-                        temp.append((data_nonZero[n, 3],data_nonZero[n, 2])) # columns are in wong order
-                    else:
-                        temp.append((data_nonZero[n+1, 3],data_nonZero[n+1, 2]))
-
+                    temp.append((data_someZero[n, 3],data_someZero[n, 2])) # columns are in wong order
 
         # Appending the distribution centre as the last store visited. 
         temp.append((data_someZero[55, 3], data_someZero[55, 2]))
@@ -236,8 +223,8 @@ if(weekday == False):
 
 ########################################### Demand Visualisation ############################################
 
+'''
 
-"""
 import seaborn as sns
 import matplotlib.pyplot as plt ###???
 
@@ -317,4 +304,4 @@ plt.show()
 
 
 plt.show()
-"""
+'''
