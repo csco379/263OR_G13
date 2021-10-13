@@ -180,4 +180,4 @@ def solveLP(Weekday):
 if __name__ == "__main__":
 
     solveLP(Weekday=True)
-    #solveLP(Weekday=False)
+    solveLP(Weekday=False)
