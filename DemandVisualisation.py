@@ -56,7 +56,7 @@ if(weekday == True):
     # Stores in all of the generated routes
     allRoutes = pd.read_csv("Ordered_Route_Matrix.csv").to_numpy()
     # Numbers of routes used
-    routeVectors = pd.read_csv("RouteVector_Weekday.csv").to_numpy()
+    routeVectors = np.loadtxt(open("RouteVector_Weekday.csv"),  delimiter=",", skiprows=0)
 
     rearranged = [None]*len(routeVectors) # Storage for all routes in correct order
 
@@ -144,7 +144,7 @@ if(weekday == False):
     allRoutes = pd.read_csv("Ordered_Route_Matrix.csv").to_numpy()
     
     # Numbers of routes used in the weekend solution
-    routeVectors = pd.read_csv("RouteVector_weekend.csv").to_numpy()
+    routeVectors = pd.read_csv("RouteVector_Weekend.csv").to_numpy()
 
     rearranged = [None]*len(routeVectors) # Storage for all routes in correct order
 
