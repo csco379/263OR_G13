@@ -134,6 +134,15 @@ if __name__ == "__main__":
     saturday_rental.sort()
 
 
+    # Print the 95% percentile inverval
+    string = "The 95% percentile interval for daily weekday costs is [{l:.2f}, {u:.2f}]"
+    print(string.format(l=weekday_costs[int(n*0.025)], u=weekday_costs[int(n*0.975)]))
+
+    string = "The 95% percentile interval for daily saturday costs is [{l:.2f}, {u:.2f}]"
+    print(string.format(l=saturday_costs[int(n*0.025)], u=saturday_costs[int(n*0.975)]))
+
+
+
     ###   Print/display the results   ###
 
     # Generate and format the plots
