@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from Simulate_Demands_Functions import *
 from Simulate_Traffic import *
+import seaborn as sns
 
 ##############################################################################################
 # This script simulates the supermarket routing problem, using the optimal set of routes
@@ -15,7 +16,7 @@ if __name__ == "__main__":
     np.random.seed(44)
 
     # Set number of trials
-    n = 10
+    n = 150
 
     # Store cost parameter data
     Cost_Parameters = {'NumTrucks' : 30, 
@@ -136,30 +137,31 @@ if __name__ == "__main__":
     ###   Print/display the results   ###
 
     # Generate and format the plots
+    sns.set()
+
     plt.figure(1)
-    plt.hist(weekday_costs, density=False, histtype='stepfilled', alpha=0.2)
+    plt.hist(weekday_costs, density=False, histtype='stepfilled', alpha=0.5)
     plt.title("Histogram of Simulated Routing Cost [1 Weekday]")
     plt.xlabel("Daily Cost [$]")
     plt.ylabel("Simulated Frequency")
 
     plt.figure(2)
-    plt.hist(saturday_costs, density=False, histtype='stepfilled', alpha=0.2)
+    plt.hist(saturday_costs, density=False, histtype='stepfilled', alpha=0.5)
     plt.title("Histogram of Simulated Routing Cost [1 Saturday]")
     plt.xlabel("Daily Cost [$]")
     plt.ylabel("Simulated Frequency")
 
     plt.figure(3)
-    plt.hist(weekday_trucks, density=False, histtype='stepfilled', alpha=0.2, bins=10)
-    plt.hist(saturday_trucks, density=False, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.hist(weekday_trucks, density=False, histtype='stepfilled', alpha=0.4, bins=10)
+    plt.hist(saturday_trucks, density=False, histtype='stepfilled', alpha=0.4, bins=10)
     plt.title("Histogram of Simulated Truck Requirements")
     plt.xlabel("Number of Trucks")
     plt.ylabel("Simulated Frequency")
     plt.legend(['Weekday', 'Saturday'])
 
-
     plt.figure(4)
-    plt.hist(weekday_rental, density=False, histtype='stepfilled', alpha=0.2, bins=10)
-    plt.hist(saturday_rental, density=False, histtype='stepfilled', alpha=0.2, bins=10)
+    plt.hist(weekday_rental, density=False, histtype='stepfilled', alpha=0.4, bins=10)
+    plt.hist(saturday_rental, density=False, histtype='stepfilled', alpha=0.4, bins=10)
     plt.title("Histogram of Simulated Rental Trucks Used")
     plt.xlabel("Number of Rental Trucks")
     plt.ylabel("Simulated Frequency")
