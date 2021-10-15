@@ -8,7 +8,7 @@ import pandas as pd
 import itertools
 from Regions import set_boundaries
 
-def generate_route_sets(Weekday, name):
+def generate_route_sets(Weekday, name, closing):
 
     # Read in  data
     distributionCentre = pd.read_csv("Distribution_Centre_Data.csv")
@@ -18,11 +18,17 @@ def generate_route_sets(Weekday, name):
         #data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
     #else:
         #data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
-
-    data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
+    ###################################################################################### CHANGES
+    if closing == True:
+        data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
+        DC = 55
+    else:
+        data = pd.read_csv("Store_Data_Nonzero_Closing.csv")
+        DC = int(data[data['Store'] == 'Distribution Centre Auckland'].index.values)
+    ######################################################################################
 
     # Distribution centre index
-    DC = 55
+    # DC = 55
 
     # Seperate the data into regions and convert to numpy arrays
     North = data.loc[data["Region"]=='North'].to_numpy()
@@ -119,16 +125,24 @@ def generate_route_sets(Weekday, name):
 
     # Obtain the binary route matrix, to be used in the linear program constraints
     binary_route_matrix = np.where(routeMatrix>0.01, 1, 0)
+    
+    ################################################################################ CHANGES
+    if closing == False:
+        # Export the binary route matrix and route data as files, to be imported in the LP solver script
+        np.savetxt("Route_Matrix_" + name + ".csv", binary_route_matrix, delimiter=',')
+        np.savetxt("Route_Times_" + name + ".csv", timeArray, delimiter=',')
+        np.savetxt("Route_Pallets_" + name + ".csv", palletsArray, delimiter=',')
 
+        # Export the non-binary route matrix as file
+        np.savetxt("Ordered_Route_Matrix.csv", routeMatrix, delimiter=',')
+    else:
+        np.savetxt("Route_Matrix_" + name + "_Closing.csv", binary_route_matrix, delimiter=',')
+        np.savetxt("Route_Times_" + name + "_Closing.csv", timeArray, delimiter=',')
+        np.savetxt("Route_Pallets_" + name + "_Closing.csv", palletsArray, delimiter=',')
 
-    # Export the binary route matrix and route data as files, to be imported in the LP solver script
-    np.savetxt("Route_Matrix_" + name + ".csv", binary_route_matrix, delimiter=',')
-    np.savetxt("Route_Times_" + name + ".csv", timeArray, delimiter=',')
-    np.savetxt("Route_Pallets_" + name + ".csv", palletsArray, delimiter=',')
-
-    # Export the non-binary route matrix as file
-    np.savetxt("Ordered_Route_Matrix.csv", routeMatrix, delimiter=',')
-
+        # Export the non-binary route matrix as file
+        np.savetxt("Ordered_Route_Matrix_Closing.csv", routeMatrix, delimiter=',')
+    #################################################################################
 
     # Check some of the output, as a 'reality check'
     # print(np.shape(routeMatrix))
@@ -139,5 +153,5 @@ def generate_route_sets(Weekday, name):
 
 if __name__ == "__main__":
 
-    generate_route_sets(True, "Weekday")
-    generate_route_sets(False, "Weekend")
+    generate_route_sets(True, "Weekday", closing = False)
+    generate_route_sets(False, "Weekend", closing = False)
