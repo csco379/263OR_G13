@@ -85,16 +85,24 @@ def solveLP(Weekday, closing, closing_store):
     # Constraint for one route per node
     if Weekday == True:
         for i in range(n_stores):
-            storename = route_name_data['Store'].iloc[i]
+            if i < 55:
+                storename = route_name_data['Store'].iloc[i]
+            else: 
+                storename = route_name_data['Store'].iloc[i+1]
+
             if closing_store != storename:
-                prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
+                prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1.0
             else:
                 prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 0
     else:
         for i in range(n_stores):
-            storename = route_name_data['Store'].iloc[i]
-            if "Countdown" in storename and "Metro" not in storename and closing_store != storename:
-                prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
+            if i < 55:
+                storename = route_name_data['Store'].iloc[i]
+            else: 
+                storename = route_name_data['Store'].iloc[i+1]
+                
+            if ("Countdown" in storename) and (("Metro" not in storename) and (closing_store != storename)):
+                prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1.0
             else:
                 prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 0
         
@@ -175,18 +183,23 @@ def solveLP(Weekday, closing, closing_store):
             
 
     # Saving the route indices for use in visualising
-    if Weekday == True:
-        np.savetxt("RouteVector_Weekday.csv", routeNumbers, delimiter=',')
-        np.savetxt("RouteStore_Weekday.csv", routeNumbers, delimiter=',')
-    else:
-        np.savetxt("RouteVector_Weekend.csv", routeNumbers, delimiter=',')
-        np.savetxt("RouteStore_Weekday.csv", routeNumbers, delimiter=',')
+    if Weekday == True and closing == True:
+        np.savetxt("RouteVector_Weekday_Closing.csv", routeNumbers, delimiter=',')
+        np.savetxt("RouteStore_Weekday_Closing.csv", routeNumbers, delimiter=',')
+    elif Weekday == False and closing == True:
+        np.savetxt("RouteVector_Weekend_Closing.csv", routeNumbers, delimiter=',')
+        np.savetxt("RouteStore_Weekend_Closing.csv", routeNumbers, delimiter=',')
 
 
+    # Initialise variables to count number of stores visited in each case
     allvisited = "False"
+    notCountdown = 0
+    if "Countdown" in closing_store and "Metro" not in closing_store:
+        notCountdown = 1
+
     if (Weekday == True and closing == False and count == 65) or (Weekday == False and closing == False and count == 53):
         allvisited = "True"
-    elif (Weekday == True and closing == True and count == 64) or (Weekday == False and closing == True and count == 52):
+    elif (Weekday == True and closing == True and count == 64) or (Weekday == False and closing == True and count == (53-notCountdown)):
         allvisited = "True"
 
     print(count, " stores visited - all visited = ", allvisited)

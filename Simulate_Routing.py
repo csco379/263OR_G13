@@ -10,13 +10,13 @@ import seaborn as sns
 # generated in the linear program (for uncertain demands and traffic/duration times)
 ##############################################################################################
 
-if __name__ == "__main__":
-
+def SimulateCosts(closing, plot):
+    
     # Set the random seed
     np.random.seed(44)
 
     # Set number of trials
-    n = 1000
+    n = 250
 
     # Store cost parameter data
     Cost_Parameters = {'NumTrucks' : 30, 
@@ -30,10 +30,16 @@ if __name__ == "__main__":
                    'MaxRouteTime' : 18000}
 
     # Read in the routes used in the optimal solution (output from SolveLP.py)
-    weekday_route_data = np.loadtxt(open("RouteStores_Weekday.csv"), delimiter=",", skiprows=0)
-    saturday_route_data = np.loadtxt(open("RouteStores_Weekend.csv"), delimiter=",", skiprows=0)
-    weekday_routes_used = list(np.loadtxt(open('RouteVector_Weekday.csv'), delimiter = ',', skiprows=0))
-    saturday_routes_used = list(np.loadtxt(open('RouteVector_Weekend.csv'), delimiter = ',', skiprows=0))
+    if closing == False:
+        weekday_route_data = np.loadtxt(open("RouteStores_Weekday.csv"), delimiter=",", skiprows=0)
+        saturday_route_data = np.loadtxt(open("RouteStores_Weekend.csv"), delimiter=",", skiprows=0)
+        weekday_routes_used = list(np.loadtxt(open('RouteVector_Weekday.csv'), delimiter = ',', skiprows=0))
+        saturday_routes_used = list(np.loadtxt(open('RouteVector_Weekend.csv'), delimiter = ',', skiprows=0))
+    else:
+        weekday_route_data = np.loadtxt(open("RouteStore_Weekday_Closing.csv"), delimiter=",", skiprows=0)
+        saturday_route_data = np.loadtxt(open("RouteStore_Weekend_Closing.csv"), delimiter=",", skiprows=0)
+        weekday_routes_used = list(np.loadtxt(open('RouteVector_Weekday_Closing.csv'), delimiter = ',', skiprows=0))
+        saturday_routes_used = list(np.loadtxt(open('RouteVector_Weekend_Closing.csv'), delimiter = ',', skiprows=0))
 
     # Get number of routes used in each case
     n_routes_weekday = np.shape(weekday_route_data)[0]
@@ -54,11 +60,11 @@ if __name__ == "__main__":
         # Simulate demands and route times
         weekday_stores_demands, saturday_stores_demands = BootstrapDemands()
         weekday_route_demands, saturday_route_demands = Obtain_Simulated_Route_Demands(weekday_routes_used, saturday_routes_used, weekday_stores_demands, saturday_stores_demands)
-        weekday_route_times, saturday_route_times = trafficSimulation("Route_Times_Weekday.csv", "Route_Times_Weekend.csv", weekday_routes_used, saturday_routes_used, weekday_route_demands, saturday_route_demands)
-
-        # Get the times of the actual routes used
-        #weekday_route_times = [weekday_route_durations[int(i)] for i in weekday_routes_used]
-        #saturday_route_times = [saturday_route_durations[int(i)] for i in saturday_routes_used]
+        
+        if closing == False:
+            weekday_route_times, saturday_route_times = trafficSimulation("Route_Times_Weekday.csv", "Route_Times_Weekend.csv", weekday_routes_used, saturday_routes_used, weekday_route_demands, saturday_route_demands)
+        else:
+            weekday_route_times, saturday_route_times = trafficSimulation("Route_Times_Weekday_Closing.csv", "Route_Times_Weekend_Closing.csv", weekday_routes_used, saturday_routes_used, weekday_route_demands, saturday_route_demands)
 
 
         ### WEEKDAY ###
@@ -144,37 +150,45 @@ if __name__ == "__main__":
 
 
     ###   Print/display the results   ###
+    if plot == True:
+        # Generate and format the plots
+        sns.set()
 
-    # Generate and format the plots
-    sns.set()
+        plt.figure(1)
+        plt.hist(weekday_costs, density=False, histtype='stepfilled', alpha=0.5)
+        plt.title("Histogram of Simulated Routing Cost [1 Weekday]")
+        plt.xlabel("Daily Cost [$]")
+        plt.ylabel("Simulated Frequency")
 
-    plt.figure(1)
-    plt.hist(weekday_costs, density=False, histtype='stepfilled', alpha=0.5)
-    plt.title("Histogram of Simulated Routing Cost [1 Weekday]")
-    plt.xlabel("Daily Cost [$]")
-    plt.ylabel("Simulated Frequency")
+        plt.figure(2)
+        plt.hist(saturday_costs, density=False, histtype='stepfilled', alpha=0.5)
+        plt.title("Histogram of Simulated Routing Cost [1 Saturday]")
+        plt.xlabel("Daily Cost [$]")
+        plt.ylabel("Simulated Frequency")
 
-    plt.figure(2)
-    plt.hist(saturday_costs, density=False, histtype='stepfilled', alpha=0.5)
-    plt.title("Histogram of Simulated Routing Cost [1 Saturday]")
-    plt.xlabel("Daily Cost [$]")
-    plt.ylabel("Simulated Frequency")
+        plt.figure(3)
+        plt.hist(weekday_trucks, density=False, histtype='stepfilled', alpha=0.4, bins=10)
+        plt.hist(saturday_trucks, density=False, histtype='stepfilled', alpha=0.4, bins=10)
+        plt.title("Histogram of Simulated Truck Requirements")
+        plt.xlabel("Number of Trucks")
+        plt.ylabel("Simulated Frequency")
+        plt.legend(['Weekday', 'Saturday'])
 
-    plt.figure(3)
-    plt.hist(weekday_trucks, density=False, histtype='stepfilled', alpha=0.4, bins=10)
-    plt.hist(saturday_trucks, density=False, histtype='stepfilled', alpha=0.4, bins=10)
-    plt.title("Histogram of Simulated Truck Requirements")
-    plt.xlabel("Number of Trucks")
-    plt.ylabel("Simulated Frequency")
-    plt.legend(['Weekday', 'Saturday'])
+        plt.figure(4)
+        plt.hist(weekday_rental, density=False, histtype='stepfilled', alpha=0.4, bins=10)
+        plt.hist(saturday_rental, density=False, histtype='stepfilled', alpha=0.4, bins=10)
+        plt.title("Histogram of Simulated Rental Trucks Used")
+        plt.xlabel("Number of Rental Trucks")
+        plt.ylabel("Simulated Frequency")
+        plt.legend(['Weekday', 'Saturday'])
 
-    plt.figure(4)
-    plt.hist(weekday_rental, density=False, histtype='stepfilled', alpha=0.4, bins=10)
-    plt.hist(saturday_rental, density=False, histtype='stepfilled', alpha=0.4, bins=10)
-    plt.title("Histogram of Simulated Rental Trucks Used")
-    plt.xlabel("Number of Rental Trucks")
-    plt.ylabel("Simulated Frequency")
-    plt.legend(['Weekday', 'Saturday'])
+        # Show plots
+        plt.show()
 
-    # Show plots
-    plt.show()
+
+
+
+if __name__ == "__main__":
+
+    SimulateCosts(closing = False, plot = True)
+

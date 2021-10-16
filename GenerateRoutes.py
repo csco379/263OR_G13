@@ -19,10 +19,14 @@ def generate_route_sets(Weekday, name, closing):
     #else:
         #data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
     ###################################################################################### CHANGES
-    if closing == False:
+    if closing == False and Weekday == True:
         data = pd.read_csv("Store_Data_Nonzero_GROUPED.csv")
-    else:
+    elif closing == False and Weekday == False:
+        data = pd.read_csv("Store_Data_Some_zero_GROUPED.csv")
+    elif closing == True and Weekday == True:
         data = pd.read_csv("Store_Data_Nonzero_Closing.csv")
+    else:
+        data = pd.read_csv("Store_Data_Some_zero_Closing.csv")
     
     #  Distribution centre index
     DC = int(data[data['Store'] == 'Distribution Centre Auckland'].index.values)
