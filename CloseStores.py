@@ -31,12 +31,14 @@ def Closing():
         else:
             data_df.at[Store_2_ID,'Demand Estimate'] = math.ceil(Store_2_Demand + 0.5*Store_1_Demand)
             closing_store = data_df.iloc[Store_1_ID]['Store']                    #deletes the store row with lowest demand from data
-                
+        
         data_df.to_csv('Store_Data_Nonzero_Closing.csv', index = False)
+        data_df.to_csv('Store_Data_Some_zero_Closing.csv', index = False)
         generate_route_sets(True, "Weekday", closing = True)                #generates routes without the pair of stores
+        generate_route_sets(True, "Weekend", closing = True)
 
         solveLP(Weekday = True, closing = True, closing_store = closing_store)           #solves LP with the new routes generated
-
+        solveLP(Weekday = False, closing = True, closing_store = closing_store)
 
 if __name__ == "__main__":
 
