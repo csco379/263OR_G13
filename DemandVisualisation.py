@@ -59,11 +59,13 @@ if(weekday == True):
     routeVectors = np.loadtxt(open("RouteVector_Weekday.csv"),  delimiter=",", skiprows=0)
 
     rearranged = [None]*len(routeVectors) # Storage for all routes in correct order
+    rearrangedNames = [None]*len(routeVectors) # Collecting namea of stores for each route in the correct order
 
     for i in range(0,len(routeVectors)):
         index = allRoutes[:,int(routeVectors[i])] # Each route that is in the solution is accessed to identify which stores it contains ans in which order
         indexStores = routeVectors[i]
         temp = [] # Temporary storage for stores of each route
+        temp2 = [] # Temporary storage for store names for each route
         # Adding the distribution centre as the first store visited
         temp.append((data_nonZero[55, 3], data_nonZero[55, 2]))
 
@@ -75,8 +77,10 @@ if(weekday == True):
                     # Appending the long then lat of the store 
                     if n<55:
                         temp.append((data_nonZero[n, 3],data_nonZero[n, 2])) # columns are in wong order
+                        temp2.append(data_nonZero[n, 1])
                     else:
                         temp.append((data_nonZero[n+1, 3],data_nonZero[n+1, 2]))
+                        temp2.append(data_nonZero[n+1, 1])
 
 
                
@@ -84,12 +88,16 @@ if(weekday == True):
 
         # Appending the distribution centre as the last store visited. 
         temp.append((data_nonZero[55, 3], data_nonZero[55, 2]))
-
+        
+        
         rearranged[i] = temp
-
+        rearrangedNames[i] = temp2
+    
+    print(rearrangedNames) # Printing out names of stores in each route in order
+    
     # Plot each route on a map of Auckland
-    # Map of Weekday Routes
-
+   
+    '''
     # Accessing Openstreet maps
     client = ors.Client(key=ORSkey)
 
@@ -141,7 +149,7 @@ if(weekday == True):
 
 
     routeMap.save("WeekdayRoutesMap.html")
-
+    '''
 # Weekend
 
 if(weekday == False):
@@ -155,11 +163,14 @@ if(weekday == False):
     routeVectors = pd.read_csv("RouteVector_Weekend.csv").to_numpy()
 
     rearranged = [None]*len(routeVectors) # Storage for all routes in correct order
+    rearrangedNames = [None]*len(routeVectors) # Collecting namea of stores for each route in the correct order
 
     for i in range(0,len(routeVectors)):
         index = allRoutes[:,int(routeVectors[i])] # Each route that is in the solution is accessed to identify which stores it contains ans in which order
         indexStores = routeVectors[i,:]
         temp = [] # Temporary storage for stores of each route
+        temp2 = []# Temporary storage for store names of each route
+
         # Adding the distribution centre as the first store visited
         temp.append((data_someZero[55, 3], data_someZero[55, 2]))
 
@@ -170,18 +181,24 @@ if(weekday == False):
                     
                     # Appending the long then lat of the store 
                     if n<55:
-                        temp.append((data_someZero[n, 3],data_someZero[n, 2])) # columns are in wong order
+                        temp.append((data_someZero[n, 3],data_someZero[n, 2])) # columns Long, Lat
+                        temp2.append(data_someZero[n+1, 1]) # Store names
                     else:
-                        temp.append((data_someZero[n+1, 3],data_someZero[n+1, 2]))
+                        temp.append((data_someZero[n+1, 3],data_someZero[n+1, 2])) # columns Long, Lat
+                        temp2.append(data_someZero[n+1, 1]) # Store names
 
 
         # Appending the distribution centre as the last store visited. 
         temp.append((data_someZero[55, 3], data_someZero[55, 2]))
 
         rearranged[i] = temp
+        rearrangedNames[i] = temp2
+    
+    print(rearrangedNames) # Printing out names of stores in each route in order
+    
 
     # Plot each route on a map of Auckland
-
+    '''
     # Accessing Openstreet maps
     client = ors.Client(key=ORSkey)
 
@@ -232,7 +249,7 @@ if(weekday == False):
 
     routeMap.save("WeekendRoutesMap.html")
 
-
+    '''
 
 ########################################### Demand Visualisation ############################################
 
