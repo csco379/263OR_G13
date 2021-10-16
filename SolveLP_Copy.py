@@ -154,7 +154,7 @@ def solveLP(Weekday, closing):
                 names = ""
 
                 for i in indices:
-                    if i < 55:
+                    if i < 54:
                         names += "  " + route_name_data.iloc[i, 1]
                     else:
                         names += "  " + route_name_data.iloc[i+1, 1]
