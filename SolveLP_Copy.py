@@ -24,7 +24,7 @@ Cost_Parameters = {'NumTrucks' : 30,
 
 #########################################################################################
 
-def solveLP(Weekday, closing):
+def solveLP(Weekday, closing, closing_store):
 
     # Read in route data
     if Weekday == True and closing == False:
@@ -85,11 +85,15 @@ def solveLP(Weekday, closing):
     # Constraint for one route per node
     if Weekday == True:
         for i in range(n_stores):
-            prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
+            storename = route_name_data['Store'].iloc[i]
+            if closing_store != storename:
+                prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
+            else:
+                prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 0
     else:
         for i in range(n_stores):
             storename = route_name_data['Store'].iloc[i]
-            if "Countdown" in storename and "Metro" not in storename:
+            if "Countdown" in storename and "Metro" not in storename and closing_store != storename:
                 prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 1
             else:
                 prob += lpSum([(vars[str(j)] + extra_vars[str(j)]) * route_matrix[i][j] for j in range(n_routes)]) == 0
@@ -154,7 +158,7 @@ def solveLP(Weekday, closing):
                 names = ""
 
                 for i in indices:
-                    if i < 54:
+                    if i < 55:
                         names += "  " + route_name_data.iloc[i, 1]
                     else:
                         names += "  " + route_name_data.iloc[i+1, 1]
@@ -180,8 +184,11 @@ def solveLP(Weekday, closing):
 
 
     allvisited = "False"
-    if (Weekday == True and count == 65) or (Weekday == False and count == 53):
+    if (Weekday == True and closing == False and count == 65) or (Weekday == False and closing == False and count == 53):
         allvisited = "True"
+    elif (Weekday == True and closing == True and count == 64) or (Weekday == False and closing == True and count == 52):
+        allvisited = "True"
+
     print(count, " stores visited - all visited = ", allvisited)
 
     #Status of the problem is printed to the screen

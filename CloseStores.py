@@ -35,7 +35,7 @@ def Closing():
         data_df.to_csv('Store_Data_Nonzero_Closing.csv', index = False)
         generate_route_sets(True, "Weekday", closing = True)                #generates routes without the pair of stores
 
-        solveLP(closing_store, Weekday = True, closing = True)           #solves LP with the new routes generated
+        solveLP(Weekday = True, closing = True, closing_store = closing_store)           #solves LP with the new routes generated
 
 
 if __name__ == "__main__":
