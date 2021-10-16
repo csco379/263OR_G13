@@ -16,7 +16,7 @@ if __name__ == "__main__":
     np.random.seed(44)
 
     # Set number of trials
-    n = 150
+    n = 1000
 
     # Store cost parameter data
     Cost_Parameters = {'NumTrucks' : 30, 
@@ -54,11 +54,11 @@ if __name__ == "__main__":
         # Simulate demands and route times
         weekday_stores_demands, saturday_stores_demands = BootstrapDemands()
         weekday_route_demands, saturday_route_demands = Obtain_Simulated_Route_Demands(weekday_routes_used, saturday_routes_used, weekday_stores_demands, saturday_stores_demands)
-        weekday_route_durations, saturday_route_durations = trafficSimulation("Route_Times_Weekday.csv", "Route_Times_Weekend.csv")
+        weekday_route_times, saturday_route_times = trafficSimulation("Route_Times_Weekday.csv", "Route_Times_Weekend.csv", weekday_routes_used, saturday_routes_used, weekday_route_demands, saturday_route_demands)
 
         # Get the times of the actual routes used
-        weekday_route_times = [weekday_route_durations[int(i)] for i in weekday_routes_used]
-        saturday_route_times = [saturday_route_durations[int(i)] for i in saturday_routes_used]
+        #weekday_route_times = [weekday_route_durations[int(i)] for i in weekday_routes_used]
+        #saturday_route_times = [saturday_route_durations[int(i)] for i in saturday_routes_used]
 
 
         ### WEEKDAY ###
