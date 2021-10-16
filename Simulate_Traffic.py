@@ -4,7 +4,11 @@ import random
 import statistics
 import csv
 
-# This function simulates the weekday and weekend traffic for route times
+##############################################################################################
+# This function simulates the weekday and weekend traffic for route times, using files with
+# all route durations, indices of the routes used and their demands
+##############################################################################################
+
 def trafficSimulation(weekdayFile, weekendFile, weekday_routes_used, saturday_routes_used, weekday_route_demands, saturday_route_demands):
 
     # Reading the csv files
