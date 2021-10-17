@@ -9,7 +9,7 @@ def set_boundaries(filename):
     loc_len = len(stores_df.index)
     
     
-    #BOUNDARIES FOR THE EAST REGION
+    ######## BOUNDARIES FOR THE EAST REGION ########
     #Left bound of East region - Countdown Meadowbank
     CD_Meadowbank_index = int(stores_df[stores_df['Store']=='Countdown Meadowbank'].index.values)
     CD_Meadowbank_x = stores_df.loc[CD_Meadowbank_index]['x']
@@ -19,7 +19,7 @@ def set_boundaries(filename):
     FC_Otahuhu_y = stores_df.loc[FC_Otahuhu_index]['y']
 
     
-    #BOUNDARIES FOR THE NORTH REGION
+    ######## BOUNDARIES FOR THE NORTH REGION ########
     #South bound in North region - Countdown Birkenhead
     CD_Birkenhead_index = int(stores_df[stores_df['Store']=='Countdown Birkenhead'].index.values)
     CD_Birkenhead_y = stores_df.loc[CD_Birkenhead_index]['y']
@@ -29,7 +29,7 @@ def set_boundaries(filename):
     CD_Glenfield_x = stores_df.loc[CD_Glenfield_index]['x']
     
 
-    #BOUNDARIES FOR THE CENTRAL REGION
+    ######## BOUNDARIES FOR THE CENTRAL REGION ########
     #Left bound - Countdown Pt Chevalier
     CD_PtChev_index = int(stores_df[stores_df['Store']=='Countdown Pt Chevalier'].index.values)
     CD_PtChev_x = stores_df.loc[CD_PtChev_index]['x']
@@ -66,6 +66,7 @@ def set_boundaries(filename):
         elif store_x >= CD_PtChev_x and store_x <= CD_Greenlane_x and store_x != CD_Lynfield_x:
             stores_df.loc[i, 'Region'] = 'Central'
         
+        #Distribution Centre (x,y) = (0,0)
         elif store_x == 0 and store_y == 0:
             stores_df.loc[i, 'Region'] = 'Central/Distribution'
 
