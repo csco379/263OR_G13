@@ -4,6 +4,7 @@ from SolveLP_Closing import solveLP
 from Simulate_Routing import SimulateCosts
 from GenerateRoutes import generate_route_sets
 import math
+import statsmodels.stats.api as sms
 
 def Closing():
         
@@ -79,5 +80,22 @@ if __name__ == "__main__":
         solveLP(Weekday = True, closing = True, closing_store = 'Countdown Papakura')           #solves LP with the new routes generated
         solveLP(Weekday = False, closing = True, closing_store = 'Countdown Papakura')
 
-        # Simulate the routing costs
-        SimulateCosts(closing = True, plot = True)
+        if False:
+            # Simulate the routing costs
+            weekdaycosts_closed, saturdaycosts_closed = SimulateCosts(closing = True, plot = True)
+            weekdaycosts_open, saturdaycosts_open = SimulateCosts(closing = False, plot = True)
+
+            # Obtain p-values
+            #test1 = stats.ttest_ind(weekdaycosts_open, weekdaycosts_closed, equal_var = False).pvalue
+            #test2 = stats.ttest_ind(saturdaycosts_open, saturdaycosts_closed, equal_var = False).pvalue
+            #print("The p-values for weekdays and Saturdays are as follows:")
+            #print(test1, test2)
+
+            # Estimate difference in means
+            weekday_diff = sms.CompareMeans(sms.DescrStatsW(weekdaycosts_open), sms.DescrStatsW(weekdaycosts_closed)).tconfint_diff(usevar='unequal')
+            saturday_diff = sms.CompareMeans(sms.DescrStatsW(saturdaycosts_open), sms.DescrStatsW(saturdaycosts_closed)).tconfint_diff(usevar='unequal')
+            print("95% confidence intervals for the difference in weekday and Saturday costs are:")
+            print("[All open - Countdown Papakura closed]")
+            print(weekday_diff)
+            print(saturday_diff)
+    

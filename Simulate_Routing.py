@@ -16,7 +16,7 @@ def SimulateCosts(closing, plot):
     np.random.seed(44)
 
     # Set number of trials
-    n = 250
+    n = 10
 
     # Store cost parameter data
     Cost_Parameters = {'NumTrucks' : 30, 
@@ -141,11 +141,18 @@ def SimulateCosts(closing, plot):
 
 
     # Print the 95% percentile inverval
-    string = "The 95% percentile interval for daily weekday costs is [{l:.2f}, {u:.2f}]"
-    print(string.format(l=weekday_costs[int(n*0.025)], u=weekday_costs[int(n*0.975)]))
+    if closing == False:
+        string = "The 95% percentile interval for daily weekday costs is [{l:.2f}, {u:.2f}]"
+        print(string.format(l=weekday_costs[int(n*0.025)], u=weekday_costs[int(n*0.975)]))
 
-    string = "The 95% percentile interval for daily saturday costs is [{l:.2f}, {u:.2f}]"
-    print(string.format(l=saturday_costs[int(n*0.025)], u=saturday_costs[int(n*0.975)]))
+        string = "The 95% percentile interval for daily saturday costs is [{l:.2f}, {u:.2f}]"
+        print(string.format(l=saturday_costs[int(n*0.025)], u=saturday_costs[int(n*0.975)]))
+    else:
+        string = "The 95% percentile interval for daily weekday costs [with a store closed] is [{l:.2f}, {u:.2f}]"
+        print(string.format(l=weekday_costs[int(n*0.025)], u=weekday_costs[int(n*0.975)]))
+
+        string = "The 95% percentile interval for daily saturday costs [with a store closed] is [{l:.2f}, {u:.2f}]"
+        print(string.format(l=saturday_costs[int(n*0.025)], u=saturday_costs[int(n*0.975)]))
 
 
 
@@ -185,7 +192,7 @@ def SimulateCosts(closing, plot):
         # Show plots
         plt.show()
 
-
+    return weekday_costs, saturday_costs
 
 
 if __name__ == "__main__":
